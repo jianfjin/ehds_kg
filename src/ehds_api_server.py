@@ -25,6 +25,17 @@ from ehds_common import (
     _read_pdf_file, audit_document,
 )
 
+# Lazy-import embedding engine (avoids loading TF-IDF cache at import time)
+_embedding_engine = None
+
+
+def _get_embedding_engine():
+    global _embedding_engine
+    if _embedding_engine is None:
+        from ehds_embedding import get_engine
+        _embedding_engine = get_engine()
+    return _embedding_engine
+
 PORT = 8080
 
 # Minimal HTML dashboard
@@ -144,6 +155,95 @@ class Handler(BaseHTTPRequestHandler):
                 if snippet:
                     matches.append({"path": doc["path"], "layer": doc["layer"], "snippet": snippet})
             return self._json({"query": query, "match_count": len(matches), "matches": matches})
+
+        if path == "/api/retrieve":
+            query = q.get("q", [""])[0]
+            if not query:
+                return self._json({"error": "Missing q"}, 400)
+            try:
+                depth = int(q.get("depth", ["1"])[0])
+            except ValueError:
+                depth = 1
+            try:
+                max_results = min(int(q.get("max_results", ["5"])[0]), 20)
+            except ValueError:
+                max_results = 5
+
+            results: list = []
+            seen_paths: set = set()
+
+            # --- depth=0: citation / keyword lookup in Index ---
+            if depth >= 0:
+                index = _load_index_entries()
+                query_lower = query.lower()
+                import re as _re
+                tokens = set(_re.findall(r"[a-z0-9]+", query_lower)) or {query_lower}
+                for sid, entry in index.items():
+                    text_all = (entry.get("title", "") + " " + entry.get("body", "")).lower()
+                    if query_lower in sid.lower() or all(t in text_all for t in tokens):
+                        results.append({
+                            "layer": "index",
+                            "document": f"EHDS-Index-{entry.get('article', '?')}",
+                            "section": entry.get("title", ""),
+                            "stable_id": sid,
+                            "text": entry.get("body", "")[:800],
+                            "source_path": entry.get("filename", ""),
+                        })
+
+            # --- depth>=1: TF-IDF semantic search ---
+            if depth >= 1:
+                try:
+                    engine = _get_embedding_engine()
+                    semantic = engine.semantic_search(query, top_k=max_results)
+                    kg_path = PROJECT_ROOT
+                    for sr in semantic:
+                        sp = sr.get("source_path", "")
+                        if sp in seen_paths:
+                            continue
+                        seen_paths.add(sp)
+                        # Read full file body for rich context
+                        try:
+                            full_path = kg_path / sp
+                            full_text = full_path.read_text(encoding="utf-8", errors="replace")
+                            _, body = _parse_frontmatter(full_text)
+                        except Exception:
+                            body = sr.get("text", "")
+                        meta = sr.get("metadata", {})
+                        results.append({
+                            "layer": sr.get("layer", ""),
+                            "document": f"EHDS-{sr.get('layer', 'kg').title()}",
+                            "section": meta.get("title", sp),
+                            "similarity": sr.get("similarity"),
+                            "text": body.strip()[:800],
+                            "source_path": sp,
+                            "article": meta.get("article", ""),
+                        })
+                except Exception as e:
+                    pass  # TF-IDF unavailable — omit gracefully
+
+            # --- depth>=2: audit rules check ---
+            if depth >= 2:
+                try:
+                    audit_result = audit_document(query)
+                    for v in audit_result.get("violations", [])[:max_results]:
+                        results.append({
+                            "layer": "audit",
+                            "document": "EHDS-Audit",
+                            "section": f"[{v.get('severity', '?').upper()}] {v.get('rule_id', '')}",
+                            "rule_id": v.get("rule_id"),
+                            "severity": v.get("severity"),
+                            "text": f"{v.get('description', '')}\n{v.get('remediation', '')}",
+                            "source_path": audit_result.get("document", ""),
+                        })
+                except Exception:
+                    pass
+
+            return self._json({
+                "query": query,
+                "depth": depth,
+                "result_count": len(results[:max_results]),
+                "results": results[:max_results],
+            })
 
         return self._json({"error": "Not found"}, 404)
 
