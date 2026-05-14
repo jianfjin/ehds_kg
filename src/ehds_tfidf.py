@@ -6,7 +6,7 @@ Builds on neuro-symbolic-compliance-kb Phase 2 patterns.
 Falls back to TF-IDF when neural embeddings are unavailable (≤2GB RAM VMs).
 
 Usage:
-    from paperclip_tfidf import get_engine
+    from ehds_tfidf import get_engine
     engine = get_engine(kb_roots=["ehds_index/", "ehds_wiki/"])
     results = engine.search("HDAB approval requirements", top_k=5)
 """
@@ -43,7 +43,7 @@ class PaperclipTFIDF:
     def __init__(self, kb_roots: list[str], cache_path: str | None = None):
         self.kb_roots = [Path(p).expanduser().resolve() for p in kb_roots]
         if cache_path is None:
-            cache_path = str(PROJECT_ROOT / "cache" / "paperclip_tfidf.pkl")
+            cache_path = str(PROJECT_ROOT / "cache" / "ehds_tfidf.pkl")
         self.cache_path = Path(cache_path).expanduser()
         self.vectorizer: TfidfVectorizer | None = None
         self.chunk_matrix: np.ndarray | None = None          # shape: (n_chunks, n_features) sparse

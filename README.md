@@ -18,7 +18,7 @@ ehds_kg/
 │   ├── ehds_embedding.py         # TF-IDF semantic search engine
 │   ├── ehds_api_server.py        # HTTP REST API gateway (port 8080)
 │   ├── batch_import.py           # Bulk Article importer
-│   ├── paperclip_tfidf.py        # Lightweight TF-IDF (standalone)
+│   ├── ehds_tfidf.py            # Lightweight TF-IDF (standalone)
 │   └── __init__.py
 ├── scripts/
 │   ├── test_e2e.py               # End-to-end validation suite
