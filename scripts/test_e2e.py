@@ -2,7 +2,7 @@
 """
 EHDS Three-Layer Stack — End-to-End Test
 =========================================
-Validates the neuro-symbolic compliance KB.
+Validates the neuro-symbolic compliance KB against the official EHDS raw rebuild.
 
 Usage:
     cd ~/projects/ehds_kg
@@ -10,13 +10,12 @@ Usage:
 """
 
 import sys
-import os
 from pathlib import Path
 
 # Add project src to path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from ehds_common import (
+from ehds_common import (  # noqa: E402
     PROJECT_ROOT, INDEX_ROOT, WIKI_ROOT, KB_ROOT,
     _load_index_entries, _resolve_citation, _parse_frontmatter,
     _resolve_kb_path, _read_text_file,
@@ -25,10 +24,23 @@ from ehds_common import (
 PASS, FAIL = "✓", "✗"
 passed = failed = 0
 
+OFFICIAL_TITLE_CHECKS = {
+    33: "Obligations of distributors",
+    50: "Applicability to health data holders",
+    51: "Minimum categories of electronic health data for secondary use",
+    53: "Purposes for which electronic health data can be processed for secondary use",
+    60: "Duties of health data holders",
+    61: "Duties of health data users",
+    68: "Data permit",
+    73: "Secure processing environment",
+}
+
+
 def check(cond, msg):
     global passed, failed
     (passed, failed) = (passed + 1, failed) if cond else (passed, failed + 1)
     print(f"  {PASS if cond else FAIL} {msg}")
+
 
 print("=" * 60)
 print("EHDS Knowledge Stack — E2E Validation")
@@ -38,24 +50,27 @@ print("=" * 60)
 # 1. INDEX LAYER
 print("\n[1/5] INDEX LAYER")
 index = _load_index_entries()
-check(len(index) >= 7, f"Loaded {len(index)} entries (>= 7)")
-check("EHDS-2025-327-A54" in index, "Art. 54 exists")
-check("EHDS-2025-327-A59" in index, "Art. 59 (HDAB) exists")
-entry = index.get("EHDS-2025-327-A54", {})
-check(entry.get("article") == 54, "Art. 54 number correct")
-check(len(entry.get("anchors", {})) >= 4, f">=4 anchors on Art. 54")
+check(len(index) == 105, f"Loaded {len(index)} official Article entries (= 105)")
+for article_num, expected_title in OFFICIAL_TITLE_CHECKS.items():
+    sid = f"EHDS-2025-327-A{article_num:03d}"
+    entry = index.get(sid, {})
+    check(bool(entry), f"Art. {article_num} exists as {sid}")
+    check(entry.get("title") == expected_title, f"Art. {article_num} official title correct")
+    check(len(entry.get("anchors", {})) >= 2, f"Art. {article_num} has paragraph anchors")
 
 # 2. CITATION RESOLUTION
 print("\n[2/5] CITATION RESOLUTION")
 cases = [
-    ("EHDS-2025-327-A54", "EHDS-2025-327-A54", None),
-    ("EHDS-2025-327-A54-P2", "EHDS-2025-327-A54", "P2"),
-    ("Art. 54", "EHDS-2025-327-A54", None),
-    ("Art. 54(2)", "EHDS-2025-327-A54", "A054-P2"),
+    ("EHDS-2025-327-A054", "EHDS-2025-327-A054", None),
+    ("EHDS-2025-327-A54", "EHDS-2025-327-A054", None),
+    ("EHDS-2025-327-A054-P2", "EHDS-2025-327-A054", "P2"),
+    ("Art. 54", "EHDS-2025-327-A054", None),
+    ("Art. 54(2)", "EHDS-2025-327-A054", "Para2"),
+    ("Reg. (EU) 2025/327, Art. 73", "EHDS-2025-327-A073", None),
 ]
 for cite, sid, anchor in cases:
     r = _resolve_citation(cite, index)
-    ok = r and r["entry"]["stable_id"] == sid and (not anchor or r.get("anchor") == anchor)
+    ok = r and r["entry"]["stable_id"] == sid and (not anchor or anchor.lower() in r.get("anchor", "").lower())
     check(ok, f"'{cite}' -> {sid}")
 check(_resolve_citation("Art. 999", index) is None, "Missing cite returns None")
 

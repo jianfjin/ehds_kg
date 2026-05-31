@@ -90,14 +90,22 @@ def _load_index_entries() -> Dict[str, Dict[str, Any]]:
         if not sid:
             continue
 
-        # Parse anchors from ## Para N sections
+        # Parse anchors from ## Para N sections. Store both legacy ParaN
+        # keys and canonical A###-PN keys when explicit [[A###-PN]] anchors
+        # are present, so old citation calls and regenerated zero-padded
+        # Article files resolve through the same public API.
         anchors: Dict[str, str] = {}
         para_pattern = re.compile(r"^## (Para \d+)$", re.MULTILINE)
         paras = re.split(r"^## Para \d+$", body, flags=re.MULTILINE)
         para_names = para_pattern.findall(body)
         for i, name in enumerate(para_names):
             if i + 1 < len(paras):
-                anchors[name.replace(" ", "")] = paras[i + 1].strip()[:500]
+                snippet = paras[i + 1].strip()[:500]
+                legacy_key = name.replace(" ", "")
+                anchors[legacy_key] = snippet
+                explicit = re.search(r"\[\[([^\]]+)\]\]", snippet)
+                if explicit:
+                    anchors[explicit.group(1)] = snippet
 
         entries[sid] = {
             "stable_id": sid,
@@ -130,11 +138,23 @@ def _resolve_citation(
 
     c = citation.strip()
 
-    # 1. Exact stable_id match
+    # 1. Exact stable_id match. Accept both canonical zero-padded
+    # EHDS-2025-327-A054 and legacy non-padded EHDS-2025-327-A54.
+    stable_match = re.fullmatch(r"(EHDS-2025-327-A)(\d{1,3})(?:-(.+))?", c, re.IGNORECASE)
+    if stable_match:
+        canonical = f"{stable_match.group(1).upper()}{int(stable_match.group(2)):03d}"
+        entry = index.get(canonical)
+        if entry:
+            anchor_key = stable_match.group(3)
+            if anchor_key:
+                for ak in entry.get("anchors", {}):
+                    if anchor_key.lower() in ak.lower() or ak.lower().endswith(anchor_key.lower()):
+                        return {"entry": entry, "anchor": ak, "anchor_text": entry["anchors"][ak]}
+            return {"entry": entry}
     if c in index:
         return {"entry": index[c]}
 
-    # 2. Stable ID + anchor (e.g. EHDS-2025-327-A54-P2)
+    # 2. Stable ID + anchor fallback for any custom stable IDs.
     for sid in index:
         if c.startswith(sid) and len(c) > len(sid):
             anchor_key = c[len(sid) + 1:] if c[len(sid)] == "-" else c[len(sid):]
