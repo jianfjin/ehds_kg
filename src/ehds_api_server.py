@@ -14,8 +14,9 @@ Dependencies: Python 3.11+, no extra packages beyond stdlib.
 
 import json
 import os
+import time
 import urllib.parse
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 
 from ehds_common import (
@@ -27,6 +28,11 @@ from ehds_common import (
 
 # Lazy-import embedding engine (avoids loading TF-IDF cache at import time)
 _embedding_engine = None
+
+# /api/retrieve query result cache: TTL 120s, max 500 entries
+_retrieve_cache: dict = {}
+_RETRIEVE_CACHE_TTL = 120_000  # 120 seconds
+_RETRIEVE_CACHE_MAX = 500
 
 
 def _get_embedding_engine():
@@ -169,6 +175,12 @@ class Handler(BaseHTTPRequestHandler):
             except ValueError:
                 max_results = 5
 
+            # Query result cache lookup (TTL 120s, max 500)
+            cache_key = f"{query}|{depth}|{max_results}"
+            cached = _retrieve_cache.get(cache_key)
+            if cached and (time.time() * 1000) < cached["expires_at"]:
+                return self._json(cached["data"])
+
             results: list = []
             seen_paths: set = set()
 
@@ -238,18 +250,24 @@ class Handler(BaseHTTPRequestHandler):
                 except Exception:
                     pass
 
-            return self._json({
+            data = {
                 "query": query,
                 "depth": depth,
                 "result_count": len(results[:max_results]),
                 "results": results[:max_results],
-            })
+            }
+            # Cache the result (TTL 120s, LRU max 500)
+            _retrieve_cache[cache_key] = {"data": data, "expires_at": time.time() * 1000 + _RETRIEVE_CACHE_TTL}
+            if len(_retrieve_cache) > _RETRIEVE_CACHE_MAX:
+                oldest_k = next(iter(_retrieve_cache))
+                del _retrieve_cache[oldest_k]
+            return self._json(data)
 
         return self._json({"error": "Not found"}, 404)
 
 
 if __name__ == "__main__":
-    srv = HTTPServer(("0.0.0.0", PORT), Handler)
+    srv = ThreadingHTTPServer(("0.0.0.0", PORT), Handler)
     print(f"[+] EHDS API Gateway on http://localhost:{PORT}")
     try:
         srv.serve_forever()
