@@ -14,8 +14,11 @@ Dependencies: Python 3.11+, no extra packages beyond stdlib.
 
 import json
 import os
+import re as _re
+import threading
 import time
 import urllib.parse
+from collections import OrderedDict
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 
@@ -30,17 +33,21 @@ from ehds_common import (
 _embedding_engine = None
 
 # /api/retrieve query result cache: TTL 120s, max 500 entries
-_retrieve_cache: dict = {}
+_retrieve_cache: OrderedDict = OrderedDict()
 _RETRIEVE_CACHE_TTL = 120_000  # 120 seconds
 _RETRIEVE_CACHE_MAX = 500
+
+# Thread safety lock for shared mutable state
+_cache_lock = threading.Lock()
 
 
 def _get_embedding_engine():
     global _embedding_engine
-    if _embedding_engine is None:
-        from ehds_embedding import get_engine
-        _embedding_engine = get_engine()
-    return _embedding_engine
+    with _cache_lock:
+        if _embedding_engine is None:
+            from ehds_embedding import get_engine
+            _embedding_engine = get_engine()
+        return _embedding_engine
 
 PORT = 8080
 
@@ -177,9 +184,11 @@ class Handler(BaseHTTPRequestHandler):
 
             # Query result cache lookup (TTL 120s, max 500)
             cache_key = f"{query}|{depth}|{max_results}"
-            cached = _retrieve_cache.get(cache_key)
-            if cached and (time.time() * 1000) < cached["expires_at"]:
-                return self._json(cached["data"])
+            with _cache_lock:
+                cached = _retrieve_cache.get(cache_key)
+                if cached and (time.monotonic() * 1000) < cached["expires_at"]:
+                    _retrieve_cache.move_to_end(cache_key)  # LRU: promote to end
+                    return self._json(cached["data"])
 
             results: list = []
             seen_paths: set = set()
@@ -188,7 +197,6 @@ class Handler(BaseHTTPRequestHandler):
             if depth >= 0:
                 index = _load_index_entries()
                 query_lower = query.lower()
-                import re as _re
                 tokens = set(_re.findall(r"[a-z0-9]+", query_lower)) or {query_lower}
                 for sid, entry in index.items():
                     text_all = (entry.get("title", "") + " " + entry.get("body", "")).lower()
@@ -231,7 +239,7 @@ class Handler(BaseHTTPRequestHandler):
                             "article": meta.get("article", ""),
                         })
                 except Exception as e:
-                    pass  # TF-IDF unavailable — omit gracefully
+                    print(f"[KG] TF-IDF search unavailable: {e}")
 
             # --- depth>=2: audit rules check ---
             if depth >= 2:
@@ -247,20 +255,22 @@ class Handler(BaseHTTPRequestHandler):
                             "text": f"{v.get('description', '')}\n{v.get('remediation', '')}",
                             "source_path": audit_result.get("document", ""),
                         })
-                except Exception:
-                    pass
+                except Exception as exc:
+                    print(f"[KG] Audit check failed: {exc}")
 
+            sliced = results[:max_results]
             data = {
                 "query": query,
                 "depth": depth,
-                "result_count": len(results[:max_results]),
-                "results": results[:max_results],
+                "result_count": len(sliced),
+                "results": sliced,
             }
             # Cache the result (TTL 120s, LRU max 500)
-            _retrieve_cache[cache_key] = {"data": data, "expires_at": time.time() * 1000 + _RETRIEVE_CACHE_TTL}
-            if len(_retrieve_cache) > _RETRIEVE_CACHE_MAX:
-                oldest_k = next(iter(_retrieve_cache))
-                del _retrieve_cache[oldest_k]
+            with _cache_lock:
+                _retrieve_cache[cache_key] = {"data": data, "expires_at": time.monotonic() * 1000 + _RETRIEVE_CACHE_TTL}
+                if len(_retrieve_cache) > _RETRIEVE_CACHE_MAX:
+                    oldest_k = next(iter(_retrieve_cache))
+                    del _retrieve_cache[oldest_k]
             return self._json(data)
 
         return self._json({"error": "Not found"}, 404)
