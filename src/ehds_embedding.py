@@ -37,6 +37,7 @@ class EHDSEmbeddingEngine:
         self.tfidf_path = TFIDF_PATH
         self.vectorizer: Any = None
         self.chunk_matrix: Any = None
+        self._chunks_cache: Optional[List[Dict[str, Any]]] = None
         self._init_db()
         self._load_or_build_tfidf()
 
@@ -55,6 +56,8 @@ class EHDSEmbeddingEngine:
             conn.commit()
 
     def _load_chunks(self) -> List[Dict[str, Any]]:
+        if self._chunks_cache is not None:
+            return self._chunks_cache
         with sqlite3.connect(self.db_path) as conn:
             cur = conn.execute(
                 "SELECT id, source_path, layer, text, tfidf, metadata FROM chunks ORDER BY id"
@@ -67,6 +70,7 @@ class EHDSEmbeddingEngine:
                     "tfidf": json.loads(row[4]) if row[4] else None,
                     "metadata": json.loads(row[5]) if row[5] else None,
                 })
+            self._chunks_cache = rows
             return rows
 
     def _load_or_build_tfidf(self):
