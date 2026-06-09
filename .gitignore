@@ -1,0 +1,14 @@
+# Cache files
+cache/
+*.pkl
+*.db
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Reviews
+reviews/
+
+# Ingest script (one-shot)
+scripts/ingest_new_pdfs.py

@@ -50,7 +50,8 @@ class EHDSEmbeddingEngine:
                     layer TEXT NOT NULL,
                     text TEXT NOT NULL,
                     tfidf TEXT,
-                    metadata TEXT
+                    metadata TEXT,
+                    priority REAL NOT NULL DEFAULT 0.0
                 )
             """)
             conn.commit()
@@ -60,7 +61,7 @@ class EHDSEmbeddingEngine:
             return self._chunks_cache
         with sqlite3.connect(self.db_path) as conn:
             cur = conn.execute(
-                "SELECT id, source_path, layer, text, tfidf, metadata FROM chunks ORDER BY id"
+                "SELECT id, source_path, layer, text, tfidf, metadata, priority FROM chunks ORDER BY id"
             )
             rows = []
             for row in cur.fetchall():
@@ -69,6 +70,7 @@ class EHDSEmbeddingEngine:
                     "text": row[3],
                     "tfidf": json.loads(row[4]) if row[4] else None,
                     "metadata": json.loads(row[5]) if row[5] else None,
+                    "priority": row[6] if len(row) > 6 else 0.0,
                 })
             self._chunks_cache = rows
             return rows
@@ -114,9 +116,9 @@ class EHDSEmbeddingEngine:
             for i, c in enumerate(all_chunks):
                 dense = self.chunk_matrix[i].toarray().tolist()[0]
                 conn.execute(
-                    "INSERT INTO chunks (source_path, layer, text, tfidf, metadata) VALUES (?, ?, ?, ?, ?)",
+                    "INSERT INTO chunks (source_path, layer, text, tfidf, metadata, priority) VALUES (?, ?, ?, ?, ?, ?)",
                     (c["source_path"], c["layer"], c["text"],
-                     json.dumps(dense), json.dumps(c.get("metadata", {}))),
+                     json.dumps(dense), json.dumps(c.get("metadata", {})), c.get("priority", 0.0)),
                 )
             conn.commit()
 
@@ -146,17 +148,20 @@ class EHDSEmbeddingEngine:
                         "article": meta.get("article"),
                         "header": header,
                     },
+                    "priority": 0.0,
                 })
         else:
             for para in body.split("\n\n"):
                 para = para.strip()
                 if para and not para.startswith("[["):
+                    priority = float(meta.get("priority", 0)) if meta.get("priority") else 0.0
                     chunks.append({
                         "text": f"{meta.get('title', '')}\n{para}",
                         "metadata": {
                             "wiki_id": meta.get("wiki_id"),
                             "article": meta.get("article"),
                         },
+                        "priority": priority,
                     })
         return chunks
 
@@ -175,8 +180,11 @@ class EHDSEmbeddingEngine:
             score = float(scores[i])
             if score <= 0:
                 continue
+            # Priority boost: new documents rank higher
+            priority = chunk.get("priority", 0.0)
+            boosted = score * (1.0 + float(priority))
             results.append({
-                "similarity": round(score, 4),
+                "similarity": round(boosted, 4),
                 "source_path": chunk["source_path"],
                 "layer": chunk["layer"],
                 "text": chunk["text"][:280] + "..." if len(chunk["text"]) > 280 else chunk["text"],
