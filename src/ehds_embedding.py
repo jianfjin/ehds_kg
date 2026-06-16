@@ -35,6 +35,9 @@ from ehds_common import (
 DB_PATH = CACHE_ROOT / "ehds_embeddings.db"
 BM25_PATH = CACHE_ROOT / "ehds_bm25.pkl"
 
+# Layer-level boost applied to BM25 scores in semantic_search.
+LAYER_BOOST = {"data": 0.15, "wiki": 0.0, "index": 0.0}
+
 # PDF conversion tools (e.g. markitdown) sometimes inject page markers.
 _PAGE_MARKER_RE = re.compile(r"^---\s*Page\s+\d+\s*---\s*$", re.MULTILINE)
 
@@ -124,7 +127,7 @@ class EHDSEmbeddingEngine:
         from rank_bm25 import BM25Okapi
 
         tokenized = [self._tokenize(c["text"]) for c in all_chunks]
-        self.bm25 = BM25Okapi(tokenized)
+        self.bm25 = BM25Okapi(tokenized, b=0.4)
         self._chunks_cache = all_chunks
 
         with sqlite3.connect(self.db_path) as conn:
@@ -192,8 +195,24 @@ class EHDSEmbeddingEngine:
                     },
                     "priority": 0.0,
                 })
+        elif layer == "data":
+            # Merge every 5 paragraphs into one chunk to reduce fragmentation.
+            paragraphs = [p.strip() for p in body.split("\n\n") if p.strip() and not p.startswith("[")]
+            for i in range(0, len(paragraphs), 5):
+                chunk_text = "\n\n".join(paragraphs[i:i + 5])
+                if chunk_text:
+                    chunks.append({
+                        "text": f"{meta.get('title', path.stem)}\n{chunk_text}",
+                        "metadata": {
+                            "article": meta.get("article"),
+                            "source": meta.get("source", ""),
+                            "document": meta.get("document", path.name),
+                        },
+                        "priority": 0.15,
+                    })
+            return chunks
         else:
-            # Paragraph chunking for both wiki and data layers.
+            # Paragraph chunking for wiki.
             for para in body.split("\n\n"):
                 para = para.strip()
                 if para and not para.startswith("[["):
@@ -207,9 +226,6 @@ class EHDSEmbeddingEngine:
                     }
                     if layer == "wiki":
                         metadata["wiki_id"] = meta.get("wiki_id")
-                    elif layer == "data":
-                        metadata["source"] = meta.get("source", "")
-                        metadata["document"] = meta.get("document", path.name)
                     chunks.append({
                         "text": f"{meta.get('title', '')}\n{para}",
                         "metadata": metadata,
@@ -234,12 +250,13 @@ class EHDSEmbeddingEngine:
                 continue
             # Priority boost: newer / highlighted documents rank higher.
             priority = chunk.get("priority", 0.0)
-            boosted = score * (1.0 + float(priority))
+            layer = chunk.get("layer", "")
+            boosted = score * (1.0 + float(priority) + LAYER_BOOST.get(layer, 0.0))
             results.append({
                 "similarity": round(boosted, 4),
                 "source_path": chunk["source_path"],
                 "layer": chunk["layer"],
-                "text": chunk["text"][:280] + "..." if len(chunk["text"]) > 280 else chunk["text"],
+                "text": chunk["text"][:1000] + "..." if len(chunk["text"]) > 1000 else chunk["text"],
                 "metadata": chunk.get("metadata", {}),
             })
         results.sort(key=lambda x: x["similarity"], reverse=True)

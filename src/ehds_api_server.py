@@ -207,7 +207,7 @@ class Handler(BaseHTTPRequestHandler):
                             "document": f"EHDS-Index-{entry.get('article', '?')}",
                             "section": entry.get("title", ""),
                             "stable_id": sid,
-                            "text": entry.get("body", "")[:800],
+                            "text": entry.get("body", "")[:2000],
                             "source_path": entry.get("filename", ""),
                         })
 
@@ -235,7 +235,7 @@ class Handler(BaseHTTPRequestHandler):
                             "document": f"EHDS-{sr.get('layer', 'kg').title()}",
                             "section": meta.get("title", sp),
                             "similarity": sr.get("similarity"),
-                            "text": body.strip()[:800],
+                            "text": body.strip()[:2000],
                             "source_path": sp,
                             "article": meta.get("article", ""),
                         })

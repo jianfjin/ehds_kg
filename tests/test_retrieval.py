@@ -15,4 +15,4 @@ def test_art68_identifier_search():
     results = engine.semantic_search("Art.68 data permit", top_k=5)
     assert len(results) > 0
     sources = " ".join(r["source_path"] for r in results)
-    assert "art" in sources.lower() or "68" in sources or "data permit" in " ".join(r["text"] for r in results)
+    assert "art" in sources.lower() or "68" in sources or "data permit" in " ".join(r["text"] for r in results).lower()
