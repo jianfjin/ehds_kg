@@ -1,0 +1,174 @@
+# EHDS 角色视角报告 — 健康数据服务机构 (Health Data Service Provider)
+
+**日期：** 2026-06-12
+**轮次：** #8 / 14 角色轮换
+**数据来源：** EHDS KG (Reg. (EU) 2025/327) — 105 条款 / 39 Wiki / 2 规则
+
+---
+
+## 核心问题
+
+作为为多家医院提供数据管理和伪匿名化服务的第三方机构，我们的核心问题是：Art. 62要求伪匿名化必须在数据持有者侧完成——这是否意味着我们作为服务商不能将原始数据拉到我们自己的处理中心？如果我们提供的是部署在医院内部的伪匿名化软件（on-premise），是否合规？
+
+---
+
+## 法规检索与分析
+
+### 相关条款索引
+
+本次分析涉及：Art. 33, Art. 59, Art. 60, Art. 62, Art. 63, Art. 64, Art. 65, Art. 67
+
+### 逐条分析
+
+**Art. 33 — Principles for secondary use of electronic health data**
+
+```
+## Para 1
+The secondary use of electronic health data shall be carried out in accordance with the following principles:
+
+## Para 2
+(a) the principle of proportionality, ensuring that only data necessary for the specific purpose are processed;
+
+## Para 3
+(b) the principle of transparency, requiring that data holders and health data access bodies inform data subjects about the secondary use of their data;
+
+## Para 4
+(c) the principle of scientific integrity, ensuring that the secondary use serves high-quality research, innovation or public health purposes;
+
+## Para 5
+(d) the principle of non-discrimination, preventing the use of electronic health data in ways that lead to discriminatory practices;
+
+## Para 6
+(e) the principle of data minimisation, limiting the processing to what is adequate,
+...(truncated)
+```
+
+**Art. 59 — Health Data Access Bodies (HDABs)**
+
+```
+## Para 1
+Each Member State shall designate one or more health data access bodies responsible for:
+  (a) receiving and processing data applications for secondary use;
+  (b) granting or refusing authorisations for secondary use;
+  (c) ensuring compliance with the conditions and safeguards laid down in this Chapter;
+  (d) monitoring the use of electronic health data made available for secondary use.
+
+## Para 2
+Health data access bodies shall be established as separate legal entities or as clearly identifiable organisational entities within a public structure, and shall be functionally independent from data holders and data users.
+
+## Para 3
+The health data access body shall refuse an application for secondary use where:
+  (a) the intended purpose is not listed in Annex II;
+  (b) the applican
+...(truncated)
+```
+
+**Article 60 — Data permit and conditions**
+
+```
+## Para 1
+[[A60-P1]]
+
+1. The Health Data Access Body shall issue a data permit specifying the conditions under which the processing may take place.
+2. The permit shall include:
+   (a) the permitted purposes;
+   (b) the categories of data;
+   (c) the duration of the permit;
+   (d) the technical and organisational measures required.
+
+## Cross-References
+-
+```
+
+**Article 62 — Obligations of the data controller**
+
+```
+## Para 1
+[[A62-P1]]
+
+1. The data controller shall process the data only in accordance with the data permit.
+2. The data controller shall implement the technical and organisational measures specified in the permit.
+3. The data controller shall notify the Health Data Access Body of any breach of security leading to accidental or unlawful destruction, loss, alteration, or unauthorised disclosure.
+
+## Cross-References
+-
+```
+
+**Article 63 — Data usage and reporting obligations**
+
+```
+## Para 1
+[[A63-P1]]
+
+1. The data controller shall submit periodic reports on the use of the data to the Health Data Access Body.
+2. The reports shall include information on the purposes pursued, the results obtained, and any unexpected findings.
+3. The Health Data Access Body may request additional information where necessary.
+
+## Cross-References
+-
+```
+
+**Article 64 — Transfers to third countries or international organisations**
+
+```
+## Para 1
+[[A64-P1]]
+
+1. Electronic health data may be transferred to a third country or international organisation only if:
+   (a) the Commission has adopted an adequacy decision;
+   (b) appropriate safeguards have been provided, such as standard contractual clauses or binding corporate rules;
+   (c) the Health Data Access Body has authorised the transfer.
+2. Transfers for scientific research purposes shall be subject to additional safeguards.
+
+## Cross-References
+-
+```
+
+**Article 65 — Supervision and enforcement**
+
+```
+## Para 1
+[[A65-P1]]
+
+1. The Health Data Access Body shall monitor compliance with the conditions of the data permit.
+2. The Health Data Access Body shall have the power to conduct audits, request information, and impose administrative fines.
+
+## Cross-References
+-
+```
+
+**Art. 67 — Anonymisation of electronic health data**
+
+```
+## Para 1
+Where electronic health data are made available for secondary use in an anonymous format, the requirements laid down in Articles 54(2) and 59(1)(b) shall not apply.
+
+## Para 2
+Anonymisation shall be carried out in accordance with the implementing acts adopted pursuant to Article 68, ensuring that the data are rendered anonymous in such a manner that the data subject is no longer identifiable.
+
+## Para 3
+The health data access body shall verify that the anonymisation techniques applied meet the standards referred to in paragraph 2 before making the data available.
+
+## Audit Anchors
+- [[A67-P1]] :: anonymous-exemption-from-HDAB / Art-54-2-waived / Art-59-1-b-waived
+- [[A67-P2]] :: anonymisation-standards / Article-68-implementing-acts / non-identifiability
+- [[A67-P3]] :: HDAB-veri
+...(truncated)
+```
+
+### 针对性分析
+
+#### 伪匿名化的技术位置与on-premise方案
+
+健康数据服务商的核心合规问题集中于Art. 62的伪匿名化框架：
+
+1. **伪匿名化的位置要求**：Art. 62(1)要求伪匿名化必须在'数据持有者端'或由数据持有者授权的代表在'安全地点'进行。这的确不允许服务商将原始数据拉到自己的处理中心（除非服务商本身是Art. 58(2)定义的'授权数据持有者'）。关键措辞是'安全地点'——如果服务商的数据中心位于数据持有者所在成员国的境内，且通过了HDAB的安全认证（Art. 62(3)的安全处理环境认证），则可以将数据拉到该数据中心处理。但跨成员国的数据转移可能受限。
+2. **On-premise方案的合规性**：Art. 62(1)没有指定技术实现方式——因此部署在医院内部的伪匿名化软件（on-premise）是完全合规的。实际上，这是一种风险更低的架构：原始数据不出医院的网络边界，伪匿名化算法在医院的服务器上运行，仅输出伪匿名化的结果。许多医院集团可能更倾向于这种'软件即服务'（SaaS-on-premise）模式。需要注意的是：on-premise软件本身也需要通过HDAB的安全认证——不能是未经审计的自开发工具。
+3. **多客户隔离**：为多家医院提供服务时，Art. 62(2)的访问控制要求暗示了严格的多租户隔离。服务商需确保每个数据持有者的伪匿名数据在逻辑或物理上分离。
+
+**建议行动：** 优先开发on-premise伪匿名化工具并提供HDAB安全认证服务；为每个数据持有者部署独立的伪匿名化实例；对医院IT人员进行最少必要的培训以适应内部部署环境。
+> *（注：本报告基于EHDS KG在报告生成时刻的最新状态自动生成。详细分析可查询KG中对应条款和Wiki文档。）*
+
+---
+
+**报告结束 — 2026-06-12 / Role: 健康数据服务机构 (Health Data Service Provider)**

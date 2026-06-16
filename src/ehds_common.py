@@ -235,6 +235,7 @@ def _walk_kb() -> List[Dict[str, str]]:
         "ehds_index": "index",
         "ehds_wiki": "wiki",
         "ehds_kb": "kb",
+        "data": "data",
     }
     for root in KB_ROOTS:
         if not root.exists():

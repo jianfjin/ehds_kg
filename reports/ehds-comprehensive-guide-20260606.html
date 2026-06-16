@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EHDS Comprehensive Guide</title><style>
+:root {
+  --ivory: #FAF7F2;
+  --paper: #FFFFFF;
+  --slate: #1A1D23;
+  --g50: #F7F7F7;
+  --g100: #EEEEEE;
+  --g200: #E0E0E0;
+  --g300: #C0C0C0;
+  --g500: #757575;
+  --g700: #424242;
+  --clay: #8B7355;
+  --oat: #D4C5A9;
+  --olive: #6B7B4F;
+  --serif: 'Georgia', 'Times New Roman', serif;
+  --mono: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--ivory);
+  color: var(--slate);
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.7;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+h1 { font-size: 32px; font-weight: 500; margin: 0 0 8px; letter-spacing: -0.02em; }
+h2 { font-size: 22px; font-weight: 500; margin: 40px 0 16px; color: var(--clay); padding-bottom: 6px; border-bottom: 2px solid var(--oat); }
+h3 { font-size: 18px; font-weight: 500; margin: 28px 0 12px; }
+p { margin: 0 0 16px; }
+a { color: var(--clay); text-decoration: underline; text-underline-offset: 3px; }
+a:hover { color: var(--olive); }
+.masthead { margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid var(--g200); }
+.masthead .meta { font-family: var(--mono); font-size: 12px; color: var(--g500); line-height: 1.8; }
+code, pre { font-family: var(--mono); font-size: 13px; background: var(--paper); border: 1px solid var(--g200); border-radius: 6px; }
+code { padding: 2px 6px; }
+pre { padding: 16px 20px; overflow-x: auto; margin: 16px 0; line-height: 1.5; font-size: 12.5px; }
+blockquote {
+  margin: 16px 0; padding: 12px 20px;
+  border-left: 4px solid var(--oat);
+  background: var(--paper);
+  border-radius: 0 8px 8px 0;
+  font-style: italic;
+  color: var(--g700);
+}
+hr { border: none; border-top: 1px solid var(--g200); margin: 32px 0; }
+table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; font-family: var(--mono); }
+th { background: var(--g100); text-align: left; padding: 8px 12px; font-weight: 600; border-bottom: 2px solid var(--g300); }
+td { padding: 8px 12px; border-bottom: 1px solid var(--g200); }
+tr:hover td { background: var(--g50); }
+ul, ol { margin: 0 0 16px; padding-left: 24px; }
+li { margin-bottom: 6px; }
+.finding-card {
+  border: 1.5px solid var(--g200); border-radius: 10px;
+  padding: 20px 24px; margin: 14px 0;
+  border-left: 4px solid var(--clay);
+  background: var(--paper);
+}
+.finding-card h3 { font-size: 16px; margin: 0 0 8px; }
+.finding-card .source { font-family: var(--mono); font-size: 11px; color: var(--g500); margin-top: 10px; }
+.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 32px 0; }
+.metric-card { background: var(--paper); border: 1.5px solid var(--g200); border-radius: 12px; padding: 20px 24px; }
+.metric-value { font-family: var(--serif); font-size: 36px; font-weight: 500; line-height: 1; margin-bottom: 6px; }
+.metric-label { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--g500); }
+.article-list { list-style: none; padding: 0; }
+.article-list li { padding: 12px 16px; border-bottom: 1px solid var(--g200); display: flex; gap: 12px; align-items: baseline; }
+.article-list li .art-num { font-family: var(--mono); font-size: 12px; color: var(--clay); min-width: 80px; font-weight: 600; }
+.sec-head { display: flex; align-items: center; gap: 12px; margin: 40px 0 20px; }
+.sec-head .idx { font-family: var(--mono); font-size: 13px; color: var(--g500); background: var(--g100); padding: 2px 10px; border-radius: 20px; }
+.sec-head h2 { margin: 0; border: none; padding: 0; }
+.footer-note { font-family: var(--mono); font-size: 11px; color: var(--g500); margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--g200); }
+.toc { background: var(--paper); border: 1.5px solid var(--g200); border-radius: 12px; padding: 24px 28px; margin: 24px 0; }
+.toc h3 { margin: 0 0 12px; font-size: 14px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--g500); }
+.toc ol { margin: 0; padding-left: 20px; }
+.toc li { margin-bottom: 8px; font-size: 14px; }
+.nav-links { display: flex; gap: 16px; flex-wrap: wrap; margin: 24px 0; }
+.nav-link { font-family: var(--mono); font-size: 12px; color: var(--g500); text-decoration: none; padding: 4px 12px; border: 1px solid var(--g200); border-radius: 20px; }
+.nav-link:hover { background: var(--g100); border-color: var(--clay); color: var(--clay); }
+.tag { display: inline-block; font-family: var(--mono); font-size: 10px; padding: 2px 8px; border-radius: 4px; background: var(--g100); color: var(--g500); margin: 0 4px 4px 0; }
+.tag-role { background: #EDF3E8; color: var(--olive); }
+.tag-date { background: #F0E8E0; color: var(--clay); }
+</style></head>
+<body>
+
+<div class="nav-links">
+  <a class="nav-link" href="index.html">← 返回索引</a>
+  <span class="nav-link">📖 全条款指南</span>
+</div>
+
+<div class="masthead">
+  <h1>EHDS — European Health Data Space</h1>
+  <p style="font-size:18px;color:var(--clay);margin-top:4px;">Comprehensive Article-by-Article Guide</p>
+  <div class="meta">
+    <div>Regulation (EU) 2025/327</div>
+    <div>生效：2025年3月 · 全面适用：2027年3月</div>
+    <div>105 条款 · 双支柱架构</div>
+  </div>
+</div>
+
+<div class="toc">
+  <h3>目录</h3>
+  <ol>
+    <li>Chapter I &amp; II — General Provisions &amp; Natural Persons' Rights</li>
+    <li>Chapter III-IV — Governance, MyHealth@EU &amp; EHR Systems</li>
+    <li>Chapter V — Secondary Use of Electronic Health Data</li>
+    <li>Chapter VI-VIII — Governance, Delegated Acts &amp; Final Provisions</li>
+  </ol>
+</div>
+
+<p>Regulation (EU) 2025/327 (the EHDS Regulation)</p>
+<hr>
+<h2>Overview</h2>
+<p>The European Health Data Space (EHDS) is a landmark regulation establishing a Union-wide framework for the use of electronic health data. It has two fundamental pillars:</p>
+<ol>
+<li>**Primary use** (Chapters I-IV): empowering natural persons to access, control, and port their electronic health data, and enabling healthcare providers to access patient data across borders</li>
+<li>**Secondary use** (Chapter V): enabling research, innovation, policymaking, and public health activities through safe, controlled access to electronic health data</li>
+</ol>
+<p>The regulation entered into force in March 2025 (20 days after OJ publication) and applies generally from 26 March 2027, with phased implementation extending to 2035.</p>
+<hr>
+<h2>Chapter I &amp; II — General Provisions &amp; Natural Persons' Rights (Art. 1-18)</h2>
+<h3>Art. 1 — Subject matter and scope</h3>
+<p>Sets the dual-objective foundation: facilitating primary use of electronic health data (healthcare delivery, patient rights) and establishing a framework for secondary use (research, innovation, public health, policymaking). Applies to EHR systems placed on the EU market, wellness applications voluntarily labelled, and electronic health data processed under the Regulation.</p>
+<h3>Art. 2 — Definitions</h3>
+<p>Defines 80+ key terms spanning: EHR (electronic health record), EHR system, electronic health data, personal/non-personal electronic health data, priority categories, primary use, secondary use, health data holder, health data user, health data access body (HDAB), data permit, MyHealth@EU, HealthData@EU, and many more. These definitions are the regulatory DNA — understanding them is prerequisite for understanding everything else.</p>
+<h3>Art. 3 — Right of natural persons to access personal electronic health data</h3>
+<p>The foundational patient right: every natural person has the right to immediately access, free of charge, their personal electronic health data processed in the context of healthcare. This includes at least the priority categories (patient summaries, e-prescriptions, e-dispensations, medical imaging, test results, discharge reports). Data must be accessible through electronic health data access services in a commonly used, machine-readable format.</p>
+<h3>Art. 4 — Electronic health data access services for natural persons</h3>
+<p>Member States must establish one or more electronic health data access services (national/regional/local). These services enable natural persons to exercise their rights under Art. 3 and 5-10. Critically, they must also provide <strong>proxy services</strong> allowing a person to authorise another person to access their data on their behalf, or allowing legal representatives to act. These are free of charge, interoperable across MS, and accessible for persons with disabilities.</p>
+<h3>Art. 5 — Right to insert information</h3>
+<p>Natural persons can insert information into their own EHR through the access services. However, this self-inserted data must be clearly distinguishable from the data inserted by health professionals. A patient cannot directly alter the clinical record.</p>
+<h3>Art. 6 — Right to rectification</h3>
+<p>Natural persons can easily request online rectification of their personal electronic health data, consistent with GDPR Article 16. The controller may verify accuracy with a relevant health professional.</p>
+<h3>Art. 7 — Right to data portability</h3>
+<p>A natural person has the right to:</p>
+<ul>
+<li>Give access to or request a healthcare provider to transmit data to another healthcare provider immediately, free of charge, without hindrance (intra-EU)</li>
+<li>Request cross-border transmission through MyHealth@EU — the receiving provider must accept and be able to read the data</li>
+<li>Request transmission to social security/reimbursement sector recipients (one-way only)</li>
+<li>Transmit a downloaded copy to any chosen healthcare provider</li>
+</ul>
+<p>This is significantly stronger than the GDPR's Article 20 portability right — it's immediate, free, mandatory, and applies to specific priority data categories.</p>
+<h3>Art. 8 — Right to restrict access</h3>
+<p>Natural persons can restrict health professionals' access to all or part of their personal electronic health data. The restriction itself is invisible to healthcare providers. However, patients are informed that this may impact the quality of their care.</p>
+<h3>Art. 9 — Right to obtain information on accessing data</h3>
+<p>Natural persons have the right to know who accessed their data, when, and what data. This includes automatic notifications. Access logs must be available for at least three years. Exceptions exist only where disclosure would endanger vital interests.</p>
+<h3>Art. 10 — Right to opt out in primary use</h3>
+<p>Member States may (by national law) provide an opt-out from primary use access. If they do, the opt-out must be reversible. However, healthcare providers can override it to protect vital interests of the data subject.</p>
+<h3>Art. 11 — Access by health professionals</h3>
+<p>Health professionals have access to the relevant personal electronic health data of patients under their treatment through health professional access services — regardless of the Member State of affiliation or treatment. Access includes at least the priority categories. Cross-border access goes through MyHealth@EU. Member States set rules for which professional categories can access which data. The patient's restriction (Art. 8) is respected except for vital interest override (logged and transparent).</p>
+<h3>Art. 12 — Health professional access services</h3>
+<p>Member States must ensure health professionals can access priority category data free of charge through dedicated access services, including for cross-border care. Access requires electronic identification means (eIDAS-recognised or EHDS-compliant). Data must be presented in a user-friendly manner in EHRs.</p>
+<h3>Art. 13 — Registration of personal electronic health data</h3>
+<p>Where electronic health data are processed for healthcare provision, healthcare providers must register at least the priority categories in electronic format in an EHR system. Each registration/update must identify the health professional, healthcare provider, and timestamp. Cross-border registration must use the patient's identification data from their Member State of affiliation.</p>
+<h3>Art. 14 — Priority categories of personal electronic health data</h3>
+<p>The six priority categories for primary use are:</p>
+<p>(a) Patient summaries</p>
+<p>(b) Electronic prescriptions</p>
+<p>(c) Electronic dispensations</p>
+<p>(d) Medical imaging studies and related reports</p>
+<p>(e) Medical test results (lab, diagnostic, related reports)</p>
+<p>(f) Discharge reports</p>
+<p>Main characteristics are in Annex I. The Commission can amend these via delegated acts.</p>
+<h3>Art. 15 — European electronic health record exchange format</h3>
+<p>By 26 March 2027, the Commission must adopt implementing acts defining the European EHR exchange format. It must be commonly used, machine-readable, support structured and unstructured data, and include:</p>
+<p>(a) Harmonised datasets with data fields and groups</p>
+<p>(b) Coding systems and values</p>
+<p>(c) Technical interoperability specifications</p>
+<p>Member States must issue priority category data in this format.</p>
+<h3>Art. 16 — Identification management</h3>
+<p>Natural persons can use any eIDAS-recognised electronic identification means. The Commission sets requirements for cross-border identification and authentication mechanisms. Services are implemented at Union level as part of MyHealth@EU.</p>
+<h3>Art. 17 — Requirements for technical implementation</h3>
+<p>The Commission determines, via implementing acts, the technical requirements for rights set out in this Section.</p>
+<h3>Art. 18 — Compensation</h3>
+<p>Healthcare providers are not entitled to compensation from receiving providers for making data available. Data subjects cannot be charged fees or costs.</p>
+<hr>
+<h2>Chapter III-IV (Section 2) — Governance &amp; MyHealth@EU (Art. 19-24)</h2>
+<h3>Art. 19 — Digital health authorities</h3>
+<p>Each Member State designates digital health authorities with extensive responsibilities: implementing primary use rights and obligations, providing information to citizens, developing technical solutions, supervising NCPeH (national contact points for digital health) participation in MyHealth@EU, implementing the European EHR exchange format, contributing to common specifications, performing market surveillance (Art. 43), and cooperating with data protection and cybersecurity authorities. They must avoid conflicts of interest and be adequately resourced.</p>
+<h3>Art. 20 — Reporting by digital health authorities</h3>
+<p>Biannual activity reports required, covering: implementation measures, % of natural persons with EHR access, handling of requests, number of healthcare providers connected to MyHealth@EU (absolute, per type, per population), cross-border data volumes, and non-compliance cases.</p>
+<h3>Art. 21 — Right to lodge a complaint</h3>
+<p>Natural and legal persons can lodge complaints with digital health authorities. Complaints about Art. 3/5-10 rights are forwarded to GDPR supervisory authorities. Cross-border complaints require cooperation between digital health authorities.</p>
+<h3>Art. 22 — Relationship with GDPR supervisory authorities</h3>
+<p>GDPR supervisory authorities are competent for Art. 3 and 5-10 enforcement (GDPR fines apply). They cooperate with digital health authorities within their respective remits.</p>
+<h3>Art. 23 — MyHealth@EU</h3>
+<p>The Commission establishes MyHealth@EU as a central interoperability platform for cross-border primary use. Each Member State designates a national contact point for digital health (NCPeH) as the organisational and technical gateway. NCPeHs exchange priority category data based on the European EHR exchange format. All healthcare providers must be connected for two-way exchange. Pharmacies must accept and dispense e-prescriptions from other MS through MyHealth@EU. NCPeHs are joint controllers; the Commission acts as processor.</p>
+<h3>Art. 24 — Supplementary cross-border services</h3>
+<p>Member States may provide supplementary services through MyHealth@EU: telemedicine, mobile health, health data translation, vaccination card services, etc. Third-country NCPeHs or international organisations can become authorised participants if requirements equivalent to MS are met.</p>
+<hr>
+<h2>Chapter III — EHR Systems and Wellness Applications (Art. 25-49)</h2>
+<h3>Art. 25 — Harmonised software components</h3>
+<p>Every EHR system must include two mandatory software components: (1) a European interoperability software component, and (2) a European logging software component. General-purpose software used in a healthcare environment is excluded.</p>
+<h3>Art. 26 — Placing on the market / putting into service</h3>
+<p>EHR systems can only be placed on the market or put into service if compliant with Chapter III. In-house hospital systems and SaaS offered to EU entities are considered "put into service." Member States cannot restrict market access for compliant systems.</p>
+<h3>Art. 27 — Relation to MDR, IVDR, AI Act</h3>
+<p>Medical devices, IVDs, and high-risk AI systems that claim interoperability with EHR harmonised components must prove compliance with essential requirements in Annex II and common specifications (Art. 36). This creates a regulatory intersection: a device that claims EHR interoperability must satisfy both MDR/IVDR/AI Act requirements AND EHDS interoperability requirements.</p>
+<h3>Art. 28 — Claims</h3>
+<p>Prohibits misleading text, names, trademarks, or signs in EHR system information sheets, instructions, or advertising. Cannot ascribe non-existent functions, hide limitations, or suggest uses outside the intended purpose documented in technical documentation.</p>
+<h3>Art. 29 — Procurement, reimbursement and financing</h3>
+<p>Member States may maintain specific procurement/financing rules for EHR systems provided they're compliant with Union law and don't affect harmonised components.</p>
+<h3>Art. 30 — Obligations of manufacturers (THE CORE CERTIFICATION ARTICLE)</h3>
+<p>Fifteen core obligations including: ensure compliance with essential requirements (Annex II) and common specifications (Art. 36); ensure harmonised components aren't adversely affected by other software; draw up technical documentation (Art. 37); provide free information sheet (Art. 38); draw up EU declaration of conformity (Art. 39); affix CE marking (Art. 41); display contact details; register in EU database (Art. 49); take corrective action for non-conformity; inform distributors/users; cooperate with market surveillance; establish complaint channels; maintain registers of complaints and non-conforming systems. Technical documentation and EU DoC must be kept for 10 years. Manufacturers must provide source code/programming logic to authorities on reasoned request.</p>
+<h3>Art. 31 — Authorised representatives</h3>
+<p>Non-EU manufacturers must appoint an EU authorised representative by written mandate. The representative keeps DoC and technical documentation, provides them to authorities on request, informs the manufacturer of non-conformity/complaints, cooperates on corrective action, and is jointly and severally liable if the manufacturer fails to comply.</p>
+<h3>Art. 32 — Obligations of importers</h3>
+<p>Importers must verify: technical documentation exists, manufacturer is identified and has an EU rep, CE marking is affixed, information sheet is provided. They must indicate their own contact details, ensure alterations don't affect conformity, recall/withdraw non-conforming systems, keep DoC copies, establish complaint channels, investigate complaints, and cooperate with market surveillance.</p>
+<h3>Art. 33 — Obligations of distributors</h3>
+<p>Before making an EHR system available, distributors must verify CE marking, information sheet, instructions for use, and manufacturer/importer identification. Must take corrective action for non-conformity. Must ensure storage/transport conditions don't affect compliance.</p>
+<h3>Art. 34 — Extended manufacturer obligations</h3>
+<p>An importer, distributor, or user becomes a manufacturer and assumes all Art. 30 obligations if they: make the system available under their own name/trademark, modify it affecting conformity, or change the intended purpose.</p>
+<h3>Art. 35 — Identification of economic operators</h3>
+<p>Economic operators must identify suppliers and recipients of EHR systems for 10 years from the last placed-on-market date.</p>
+<h3>Art. 36 — Common specifications</h3>
+<p>By 26 March 2027, the Commission adopts common specifications covering: scope, applicability to EHR categories, version, validity, normative part, explanatory guidelines. May include: datasets, coding systems, data quality requirements, technical specifications/standards, patient safety/security/confidentiality requirements, identification management. EHR systems in conformity with common specifications are presumed in conformity with essential requirements.</p>
+<h3>Art. 37 — Technical documentation</h3>
+<p>Must be drawn up before placing on the market and kept up to date. Contents mirror Annex II essential requirements.</p>
+<h3>Art. 38 — Information sheet</h3>
+<p>Free, clear instructions for use in accessible formats, accompanying the EHR system.</p>
+<h3>Art. 39 — EU declaration of conformity</h3>
+<p>Manufacturer signs a single DoC covering all applicable EU acts. Digital format, 10+ year availability.</p>
+<h3>Art. 40 — Conformity assessment of EHR systems</h3>
+<p>Assessment results must be entered into the EU database.</p>
+<h3>Art. 41 — CE marking</h3>
+<p>Visible, legible, indelible. Affixed before placing on the market.</p>
+<h3>Art. 42 — Harmonised standards</h3>
+<p>EHR systems conforming to harmonised standards published in the OJ are presumed conformant with the covered essential requirements.</p>
+<h3>Art. 43 — Market surveillance authorities</h3>
+<p>Designated per Member State, applying Regulation (EU) 2019/1020. Can ban, restrict, or recall EHR systems.</p>
+<h3>Art. 44 — Handling of non-conformity</h3>
+<p>Corrective action procedure: market surveillance authority assesses, manufacturer takes corrective action, withdrawals, or recalls. Serious risk notification between Member States.</p>
+<h3>Art. 45 — Formal non-compliance</h3>
+<p>Escalation procedure when the manufacturer doesn't adequately address non-conformity.</p>
+<h3>Art. 46 — Union safeguard procedure</h3>
+<p>Commission evaluates national measures against another MS's measures. Can issue implementing decisions.</p>
+<h3>Art. 47 — Wellness applications</h3>
+<p>Voluntary labelling system. Manufacturers can affix a wellness label if compliant with requirements.</p>
+<h3>Art. 48 — Requirements for wellness applications</h3>
+<p>Data quality, compatibility, safety, information, and labelling requirements.</p>
+<h3>Art. 49 — EU database for registration</h3>
+<p>Public database of all DoC-issued EHR systems and wellness applications with labels. Managed by the Commission.</p>
+<hr>
+<h2>Chapter IV — Secondary Use of Electronic Health Data (Art. 50-87)</h2>
+<h3>Art. 50 — Applicability to health data holders</h3>
+<p>Natural persons and microenterprises are exempt but Member States may opt them in. Member States can allow health data intermediation entities to fulfil data holder duties. Notification to Commission by 26 March 2029.</p>
+<h3>Art. 51 — Minimum data categories for secondary use</h3>
+<p>Seventeen categories of electronic health data must be made available for secondary use:</p>
+<p>(a) EHR data</p>
+<p>(b) Health determinants (socioeconomic, environmental, behavioural)</p>
+<p>(c) Aggregated healthcare needs/resources/expenditure</p>
+<p>(d) Pathogen data</p>
+<p>(e) Healthcare administrative data (dispensations, claims, reimbursements)</p>
+<p>(f) Human genetic, epigenomic, genomic data</p>
+<p>(g) Other omic data (proteomic, transcriptomic, metabolomic, lipidomic)</p>
+<p>(h) Data from medical devices</p>
+<p>(i) Wellness application data</p>
+<p>(j) Health professional data (status, specialisation, institution)</p>
+<p>(k) Population health registries</p>
+<p>(l) Medical and mortality registries</p>
+<p>(m) Clinical trial/study data</p>
+<p>(n) Other medical device health data</p>
+<p>(o) Medicinal product and device registries</p>
+<p>(p) Research cohort, questionnaire, survey data</p>
+<p>(q) Biobank data</p>
+<p>Member States may add categories or introduce stricter safeguards for (f), (g), (i), (q).</p>
+<h3>Art. 52 — Intellectual property protection</h3>
+<p>Electronic health data protected by IP rights, trade secrets, or regulatory data protection must still be made available for secondary use. Health data holders inform the HDAB of IP-protected content. HDABs take all appropriate measures to protect IP. If granting access would entail a serious risk of infringing IP that cannot be satisfactorily addressed, the HDAB must refuse access.</p>
+<h3>Art. 53 — Permitted purposes for secondary use</h3>
+<p>Six permitted purposes:</p>
+<p>(a) Public health (disease surveillance, health threats, epidemic response)</p>
+<p>(b) Policymaking (healthcare planning, cost-effectiveness analysis, health system evaluation)</p>
+<p>(c) Statistics (official and health statistics production)</p>
+<p>(d) Education and training (health professional education)</p>
+<p>(e) Scientific research (medical, clinical, public health research)</p>
+<p>(f) Care improvement (quality assessment, benchmarking, patient safety)</p>
+<p>Explicitly prohibited: decisions detrimental to natural persons based on their data; product marketing/advertising/insurance decisions; labour market assessment/creditworthiness assessment.</p>
+<h3>Art. 54 — Scientific research</h3>
+<p>Pre-authorisation by HDAB required. Must have ethics committee opinion, meet scientific standards, demonstrate data minimisation. Cannot directly use data for purposes outside the permitted list. Anonymised data does not require HDAB authorisation.</p>
+<h3>Art. 55 — Health data access bodies (HDABs)</h3>
+<p>Each Member State designates one or more HDABs. Can be new public bodies, existing bodies, or internal services. Where multiple HDABs exist, one acts as coordinator. Must be adequately resourced. Conflicts of interest must be avoided (organisational segregation between application assessment, data processing, and provision). By 26 March 2027, Member States inform the Commission.</p>
+<h3>Art. 56 — Union health data access service</h3>
+<p>The Commission acts as HDAB when health data holders are EU institutions, bodies, offices, or agencies.</p>
+<h3>Art. 57 — Tasks of HDABs</h3>
+<p>Comprehensive list of 12+ tasks:</p>
+<p>(a) Deciding on health data access applications, authorising and issuing data permits, approving health data requests — including providing access in secure processing environments, monitoring compliance, and requesting data from health data holders</p>
+<p>(b) Processing data (receiving, combining, preparing, pseudonymising/anonymising)</p>
+<p>(c) Preserving IP/trade secret/regulatory data confidentiality</p>
+<p>(d) Cooperating with health data holders on data quality and utility labels</p>
+<p>(e) Maintaining a management system recording all applications, permits, decisions</p>
+<p>(f) Maintaining a public information system</p>
+<p>(g)-(h) Cooperating at Union/national level on standards, best practices</p>
+<p>(i) Facilitating cross-border access through HealthData@EU</p>
+<p>(j) Publicly disclosing: national dataset catalogue, applications received, permits issued (within 30 working days), non-compliance measures, results, and information system</p>
+<p>HDABs must cooperate with GDPR supervisory authorities, patient organisations, health professionals, researchers, ethics committees, and other competent bodies.</p>
+<h3>Art. 58 — HDAB obligations to natural persons</h3>
+<p>HDABs must provide public information on: legal basis for processing, technical and organisational measures, data subject rights (including opt-out), significant findings notification mechanism, and how to exercise rights.</p>
+<h3>Art. 59 — HDAB establishment and refusal grounds</h3>
+<p>HDABs are independent legal entities. They must refuse applications where:</p>
+<ul>
+<li>The purpose is not in Annex II (permitted purposes)</li>
+<li>The applicant fails to meet Art. 67(2) requirements</li>
+<li>Processing would violate applicable law</li>
+<li>The applicant lacks safeguards to prevent misuse</li>
+<li>Access would violate IP/trade secrets</li>
+</ul>
+<h3>Art. 60 — Data permit and conditions</h3>
+<p>Issued by HDAB specifying: purposes, data categories, duration, TOMs, processing environment requirements, re-identification prohibition, publication obligations. Duration is limited to what is necessary. Permits can require anonymised output only.</p>
+<h3>Art. 61 — Modification, suspension, revocation</h3>
+<p>Grounds: conditions no longer met, infringement of permit terms, false information provided, public interest reasons. Data users must communicate findings to HDAB for public disclosure.</p>
+<h3>Art. 62 — Duties of data holders</h3>
+<p>Health data holders must make data available to HDAB upon request within 3 months (extendable by 3 months). Must maintain dataset descriptions in the national catalogue (annual accuracy check). Non-personal data must be accessible through trusted open databases.</p>
+<h3>Art. 63 — Enforcement measures</h3>
+<p>HDABs can issue warnings, order compliance within a specific period, impose bans on processing, or order cessation of processing.</p>
+<h3>Art. 64 — Administrative fines by HDAB</h3>
+<p><strong>Two tiers:</strong></p>
+<ul>
+<li>Tier 1 (general): up to EUR 10 million or 2% of worldwide annual turnover — for breaches of Art. 60 (data holder duties) and Art. 61 (data user obligations)</li>
+<li>Tier 2 (severe): up to EUR 20 million or 4% of worldwide annual turnover — for processing outside permitted purposes (Art. 54), extracting data from secure environments, re-identification attempts, non-compliance with enforcement measures</li>
+</ul>
+<p>Factors considered: nature/gravity/duration, intentional/negligent, mitigation actions, previous infringements, cooperation, financial benefits gained.</p>
+<h3>Art. 65 — Supervision by HDAB</h3>
+<p>HDABs monitor compliance, conduct audits, request information, impose fines. Powers to access premises and data.</p>
+<h3>Art. 66 — Penalties by Member States</h3>
+<p>Member States must lay down rules on penalties for infringements not covered by HDAB fines. Penalties must be effective, proportionate, and dissuasive.</p>
+<h3>Art. 67 — Anonymisation</h3>
+<p>Anonymised data (per Art. 67) does not require HDAB authorisation. HDAB verifies anonymisation technique before release. The Commission sets anonymisation standards via implementing acts. This is critical — it's the "off-ramp" for secondary use without the full HDAB permit process.</p>
+<h3>Art. 68 — Implementing acts on anonymisation</h3>
+<p>Commission adopts common specifications for anonymisation methods, taking into account state of the art, international standards, and re-identification risk.</p>
+<h3>Art. 69 — Health data requests (non-personal data)</h3>
+<p>Non-personal health data can be requested through a simplified procedure. HDAB approves or rejects within 30 working days.</p>
+<h3>Art. 70 — Mandatory data quality and utility label</h3>
+<p>By 26 March 2029, datasets for secondary use must carry a data quality and utility label. The label provides information on completeness, accuracy, timeliness, consistency, and representativeness of the data.</p>
+<h3>Art. 71 — Right to opt out from secondary use</h3>
+<p>Natural persons have the right to opt out at any time, without providing reason, reversibly. Member States must provide accessible opt-out mechanisms. Once exercised, data from that person cannot be made available for new permits/requests (existing permits unaffected).</p>
+<p><strong>Exception:</strong> Member States may provide by national law for overriding opt-out where:</p>
+<ul>
+<li>A public sector body or entity with a public health mandate submits the application</li>
+<li>For public health, policymaking, or statistics purposes (Art. 53(1)(a)(b)(c)) OR scientific research for important reasons of public interest</li>
+<li>Data cannot be obtained by alternative means</li>
+<li>Specific and suitable protective measures are in place</li>
+</ul>
+<h3>Art. 72-74 — Secure processing environment</h3>
+<p>HDABs provide secure processing environments (SPEs) where data users analyse data. Data cannot be extracted in identifiable form. Output validation before release. SPEs must meet stringent technical and organisational standards.</p>
+<h3>Art. 75 — HealthData@EU</h3>
+<p>The cross-border secondary use infrastructure. National contact points for secondary use (NCPeH-S) connect to the central platform. Third countries can become authorised participants. Full cross-border functionality by 26 March 2035.</p>
+<h3>Art. 76-80 — Dataset catalogue and transparency</h3>
+<p>HDABs maintain national dataset catalogues. Data quality and utility labels. Fees (Art. 62) — cost-based, non-discriminatory, with reduced fees for public sector, research, and education. Transparency of data permit issuance.</p>
+<hr>
+<h2>Chapter VI — European Health Data Space Governance (Art. 88-98)</h2>
+<h3>Art. 88-91 — Competent authorities</h3>
+<p>Each Member State designates competent authorities for the Regulation. Reporting obligations to the Commission.</p>
+<h3>Art. 92 — European Health Data Space Board (EHDS Board)</h3>
+<p>Established to facilitate cooperation. Composition: two representatives per Member State (one for primary use, one for secondary use). Co-chaired by Commission and one Member State rep. Decisions by consensus where possible, otherwise two-thirds majority. May invite market surveillance authorities, EDPB, EDPS, EMA, ECDC, ENISA, experts, and observers. Subgroups for specific topics.</p>
+<h3>Art. 93 — Stakeholder forum</h3>
+<p>The Commission establishes a stakeholder forum for consultation on EHDS implementation.</p>
+<h3>Art. 94 — EHDS Member State laboratories</h3>
+<p>Member States may designate voluntary "EHDS laboratories" for piloting innovative data-sharing solutions.</p>
+<h3>Art. 95-96 — International cooperation</h3>
+<p>Framework for cooperation with third countries and international organisations. Data transfers must comply with GDPR Chapter V.</p>
+<h3>Art. 97 — Exercise of delegation</h3>
+<p>Power to adopt delegated acts (Art. 14(2), 49(4), 78(5)) conferred on Commission for indefinite period, revocable by EP or Council. Three-month scrutiny period for delegated acts.</p>
+<h3>Art. 98 — Committee procedure</h3>
+<p>Examination procedure under Regulation (EU) No 182/2011 (comitology).</p>
+<hr>
+<h2>Chapter VII — Delegated Acts &amp; Implementing Acts (Art. 99-101)</h2>
+<h3>Art. 99-101</h3>
+<p>Provisions for delegated powers and implementing powers, consistency with other Union legal acts.</p>
+<hr>
+<h2>Chapter VIII — Miscellaneous &amp; Final Provisions (Art. 102-105)</h2>
+<h3>Art. 102 — Evaluation, review and progress report</h3>
+<ul>
+<li>By 26 March 2033: targeted evaluation covering interoperability, data categories, opt-out impact, certification framework, market functioning, cost-benefit analysis, fees</li>
+<li>By 26 March 2035: overall evaluation of the Regulation</li>
+<li>Annual progress reports (from 2025 to full implementation) to the Council</li>
+</ul>
+<h3>Art. 103 — Repeals</h3>
+<p>Repeals Directive 2011/24/EU on patients' rights in cross-border healthcare (with transitional provisions).</p>
+<h3>Art. 104 — Amendments to other acts</h3>
+<p>Consequential amendments to relevant regulations.</p>
+<h3>Art. 105 — Entry into force and application</h3>
+<p><strong>Timeline:</strong></p>
+<p>| Date | Milestone |</p>
+<p>|------|-----------|</p>
+<p>| March 2025 | Entry into force (20 days after OJ publication) |</p>
+<p>| 26 March 2027 | General application begins; HDABs operational; common specs adopted; EHR exchange format defined; implementing acts (Art. 13(4), 15(1), 23(4), 36(1)) |</p>
+<p>| 26 March 2029 | Chapter III (EHR systems) applies for priority categories (a) patient summaries, (b) e-prescriptions, (c) e-dispensations; Chapter IV (MyHealth@EU) applies; wellness labelling applies; data quality labels (Art. 70, 73(5), 75(12), 77(4), 78(6)) |</p>
+<p>| 26 March 2031 | Chapter III applies for priority categories (d) imaging, (e) test results, (f) discharge reports; Chapter III applies to in-house EHR systems; expanded secondary use categories (b, f, g, m, p) |</p>
+<p>| 26 March 2035 | HealthData@EU full cross-border functionality (Art. 75(5)) |</p>
+<hr>
+<h2>Summary Architecture</h2>
+<pre><code>                    EHDS TWO-PILLAR ARCHITECTURE
+
+    PILLAR 1: PRIMARY USE                    PILLAR 2: SECONDARY USE
+    (Healthcare delivery)                     (Research, innovation, policy)
+
+    Electronic Health Data                    Electronic Health Data
+    Access Services (Art. 4)                  (17 categories, Art. 51)
+           |                                         |
+           v                                         v
+    Health Professional                       Health Data Access Body
+    Access Services (Art. 12)                 (HDAB, Art. 55)
+           |                                         |
+           v                                         v
+    MyHealth@EU                              HealthData@EU
+    (Art. 23)                                (Art. 75)
+           |                                         |
+           v                                         v
+    Cross-border patient care                Secure Processing
+    (e-prescriptions,                         Environment (Art. 73)
+     patient summaries, etc.)                 Data Permit (Art. 68)
+
+    PATIENT RIGHTS:                    HDAB PERMIT PROCESS:
+    - Access (Art. 3)                  - Application (Art. 67)
+    - Portability (Art. 7)             - Assessment (Art. 57)
+    - Restriction (Art. 8)             - Permit issuance (Art. 68)
+    - Information (Art. 9)             - SPE access (Art. 73)
+    - Opt-out (Art. 10)                - Output validation
+                                        - Opt-out respected (Art. 71)
+
+    CERTIFICATION (EHR Systems, Chapter III):
+    - Harmonised software components (Art. 25)
+    - Common specifications (Art. 36)
+    - EU DoC + CE marking (Art. 39, 41)
+    - Market surveillance (Art. 43-46)
+    - EU database (Art. 49)
+
+    FINES:
+    - Secondary use violations: up to EUR 20M / 4% turnover (Art. 64)
+    - Primary use violations: GDPR-level fines (Art. 22)
+</code></pre>
+
+
+<div class="footer-note">
+  Reg. (EU) 2025/327 · EHDS Knowledge Graph · Generated 2026-06-06 20:56 UTC
+  <br><a href="index.html">← 返回报告索引</a>
+</div>
+</body></html>

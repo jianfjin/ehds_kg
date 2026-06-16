@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EHDS 角色视角报告 — 医疗保险机构 (Health Insurer)</title><style>
+:root {
+  --ivory: #FAF7F2;
+  --paper: #FFFFFF;
+  --slate: #1A1D23;
+  --g50: #F7F7F7;
+  --g100: #EEEEEE;
+  --g200: #E0E0E0;
+  --g300: #C0C0C0;
+  --g500: #757575;
+  --g700: #424242;
+  --clay: #8B7355;
+  --oat: #D4C5A9;
+  --olive: #6B7B4F;
+  --serif: 'Georgia', 'Times New Roman', serif;
+  --mono: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--ivory);
+  color: var(--slate);
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.7;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+h1 { font-size: 32px; font-weight: 500; margin: 0 0 8px; letter-spacing: -0.02em; }
+h2 { font-size: 22px; font-weight: 500; margin: 40px 0 16px; color: var(--clay); padding-bottom: 6px; border-bottom: 2px solid var(--oat); }
+h3 { font-size: 18px; font-weight: 500; margin: 28px 0 12px; }
+p { margin: 0 0 16px; }
+a { color: var(--clay); text-decoration: underline; text-underline-offset: 3px; }
+a:hover { color: var(--olive); }
+.masthead { margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid var(--g200); }
+.masthead .meta { font-family: var(--mono); font-size: 12px; color: var(--g500); line-height: 1.8; }
+code, pre { font-family: var(--mono); font-size: 13px; background: var(--paper); border: 1px solid var(--g200); border-radius: 6px; }
+code { padding: 2px 6px; }
+pre { padding: 16px 20px; overflow-x: auto; margin: 16px 0; line-height: 1.5; font-size: 12.5px; }
+blockquote {
+  margin: 16px 0; padding: 12px 20px;
+  border-left: 4px solid var(--oat);
+  background: var(--paper);
+  border-radius: 0 8px 8px 0;
+  font-style: italic;
+  color: var(--g700);
+}
+hr { border: none; border-top: 1px solid var(--g200); margin: 32px 0; }
+table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; font-family: var(--mono); }
+th { background: var(--g100); text-align: left; padding: 8px 12px; font-weight: 600; border-bottom: 2px solid var(--g300); }
+td { padding: 8px 12px; border-bottom: 1px solid var(--g200); }
+tr:hover td { background: var(--g50); }
+ul, ol { margin: 0 0 16px; padding-left: 24px; }
+li { margin-bottom: 6px; }
+.finding-card {
+  border: 1.5px solid var(--g200); border-radius: 10px;
+  padding: 20px 24px; margin: 14px 0;
+  border-left: 4px solid var(--clay);
+  background: var(--paper);
+}
+.finding-card h3 { font-size: 16px; margin: 0 0 8px; }
+.finding-card .source { font-family: var(--mono); font-size: 11px; color: var(--g500); margin-top: 10px; }
+.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 32px 0; }
+.metric-card { background: var(--paper); border: 1.5px solid var(--g200); border-radius: 12px; padding: 20px 24px; }
+.metric-value { font-family: var(--serif); font-size: 36px; font-weight: 500; line-height: 1; margin-bottom: 6px; }
+.metric-label { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--g500); }
+.article-list { list-style: none; padding: 0; }
+.article-list li { padding: 12px 16px; border-bottom: 1px solid var(--g200); display: flex; gap: 12px; align-items: baseline; }
+.article-list li .art-num { font-family: var(--mono); font-size: 12px; color: var(--clay); min-width: 80px; font-weight: 600; }
+.sec-head { display: flex; align-items: center; gap: 12px; margin: 40px 0 20px; }
+.sec-head .idx { font-family: var(--mono); font-size: 13px; color: var(--g500); background: var(--g100); padding: 2px 10px; border-radius: 20px; }
+.sec-head h2 { margin: 0; border: none; padding: 0; }
+.footer-note { font-family: var(--mono); font-size: 11px; color: var(--g500); margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--g200); }
+.toc { background: var(--paper); border: 1.5px solid var(--g200); border-radius: 12px; padding: 24px 28px; margin: 24px 0; }
+.toc h3 { margin: 0 0 12px; font-size: 14px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--g500); }
+.toc ol { margin: 0; padding-left: 20px; }
+.toc li { margin-bottom: 8px; font-size: 14px; }
+.nav-links { display: flex; gap: 16px; flex-wrap: wrap; margin: 24px 0; }
+.nav-link { font-family: var(--mono); font-size: 12px; color: var(--g500); text-decoration: none; padding: 4px 12px; border: 1px solid var(--g200); border-radius: 20px; }
+.nav-link:hover { background: var(--g100); border-color: var(--clay); color: var(--clay); }
+.tag { display: inline-block; font-family: var(--mono); font-size: 10px; padding: 2px 8px; border-radius: 4px; background: var(--g100); color: var(--g500); margin: 0 4px 4px 0; }
+.tag-role { background: #EDF3E8; color: var(--olive); }
+.tag-date { background: #F0E8E0; color: var(--clay); }
+</style></head>
+<body>
+
+<div class="nav-links">
+  <a class="nav-link" href="index.html">← 返回索引</a>
+  <span class="nav-link">EHDS 报告</span>
+</div>
+
+<div class="masthead">
+  <h1>Health Insurer</h1>
+  <div class="meta">
+    <div>📅 2026-06-05</div>
+    <div>📄 #10 / 14 角色轮换</div>
+    <div>📡 EHDS KG (Reg. (EU) 2025/327) — 105 条款 / 20 Wiki / 2 规则</div>
+  </div>
+</div>
+
+<p><strong>日期：</strong> 2026-06-05</p>
+<p><strong>轮次：</strong> #10 / 14 角色轮换</p>
+<p><strong>数据来源：</strong> EHDS KG (Reg. (EU) 2025/327) — 105 条款 / 20 Wiki / 2 规则</p>
+<hr>
+<h2>核心问题</h2>
+<p>作为医疗保险机构，我们希望在精算模型中利用聚合健康数据。Art. 35明确禁止将EHDS数据用于确定保险保费——但这一限制的范围是什么？如果我们使用公开的、完全匿名化的统计数据（而非EHDS来源的可识别数据），是否仍受限制？</p>
+<hr>
+<h2>法规检索与分析</h2>
+<h3>相关条款索引</h3>
+<p>本次分析涉及：Art. 33, Art. 34, Art. 35, Art. 37, Art. 50, Art. 51, Art. 52</p>
+<h3>逐条分析</h3>
+<p><strong>Art. 33 — Principles for secondary use of electronic health data</strong></p>
+<pre><code>## Para 1
+The secondary use of electronic health data shall be carried out in accordance with the following principles:
+
+## Para 2
+(a) the principle of proportionality, ensuring that only data necessary for the specific purpose are processed;
+
+## Para 3
+(b) the principle of transparency, requiring that data holders and health data access bodies inform data subjects about the secondary use of their data;
+
+## Para 4
+(c) the principle of scientific integrity, ensuring that the secondary use serves high-quality research, innovation or public health purposes;
+
+## Para 5
+(d) the principle of non-discrimination, preventing the use of electronic health data in ways that lead to discriminatory practices;
+
+## Para 6
+(e) the principle of data minimisation, limiting the processing to what is adequate,
+...(truncated)
+</code></pre>
+<p><strong>Article 34 — Scope of secondary use</strong></p>
+<pre><code>## Para 1
+[[A34-P1]]
+
+1. This Chapter applies to the processing of electronic health data for secondary use purposes as set out in Annex II.
+2. It shall not apply to the processing of electronic health data for primary use purposes or for purposes falling outside the scope of this Regulation.
+
+## Cross-References
+-
+</code></pre>
+<p><strong>Article 35 — Prohibition of certain uses</strong></p>
+<pre><code>## Para 1
+[[A35-P1]]
+
+1. Electronic health data shall not be processed for purposes of advertising, profiling leading to discrimination, or for purposes of determining insurance premiums.
+2. Member States shall ensure that appropriate sanctions are in place for infringements of this prohibition.
+
+## Cross-References
+-
+</code></pre>
+<p><strong>Article 37 — Permitted purposes for secondary use</strong></p>
+<pre><code>## Para 1
+[[A37-P1]]
+
+1. Electronic health data may be processed for the following secondary use purposes:
+   (a) scientific research;
+   (b) public health;
+   (c) patient safety;
+   (d) health service planning and administration;
+   (e) training and education of healthcare professionals;
+   (f) development and innovation of products and services.
+2. The Commission may amend Annex II by delegated acts in accordance with Article 89.
+
+## Cross-References
+-
+</code></pre>
+<p><strong>Article 50 — General conditions for imposing administrative fines</strong></p>
+<pre><code>## Para 1
+[[A50-P1]]
+
+1. Each supervisory authority shall ensure that administrative fines are imposed in each individual case where this Regulation is infringed.
+2. Fines shall be effective, proportionate and dissuasive.
+
+## Cross-References
+-
+</code></pre>
+<p><strong>Article 51 — Administrative fines for infringements of specific provisions</strong></p>
+<pre><code>## Para 1
+[[A51-P1]]
+
+1. Infringements of the provisions concerning the general principles for processing, the conditions for consent, and the rights of data subjects shall be subject to administrative fines up to EUR 10 000 000 or 2 % of the total worldwide annual turnover.
+2. Infringements of the provisions concerning the obligations of data controllers and processors shall be subject to administrative fines up to EUR 20 000 000 or 4 % of the total worldwide annual turnover.
+
+## Cross-References
+-
+</code></pre>
+<p><strong>Article 52 — Penalties for infringements of Member State law</strong></p>
+<pre><code>## Para 1
+[[A52-P1]]
+
+1. Member States shall lay down the rules on other penalties applicable to infringements of this Regulation.
+2. Penalties shall be effective, proportionate and dissuasive.
+
+## Cross-References
+-
+</code></pre>
+<h3>针对性分析</h3>
+<h4>保险精算的合规边界：聚合统计的灰色地带</h4>
+<p>医疗保险机构在EHDS中处于一个特殊位置：既是潜在的数据使用者（用于精算和风险管理），又是Art. 35明确禁止的使用受益方。边界在哪里？</p>
+<ol>
+<li>**Art. 35禁止的范围**：Art. 35(1)(d)明确禁止将EHDS数据用于'确定保险费率或保险定价'。这一禁止不仅适用于使用EHDS数据直接估损，也适用于使用EHDS数据建立的风险分层模型，即使该模型不直接处理个体数据。关键标准是：数据的使用是否'关联到'保险定价决策。因此，即使保险公司使用公开的匿名化的聚合统计（来源于EHDS数据），如果该统计被用于调整保费计算模型，仍然可能落入Art. 35(1)(d)的禁止范围。</li>
+<li>**公开统计的合规判断**：如果保险公司使用的数据是其他机构发布的全匿名化汇总统计（如国家统计局发布的疾病发病率表），且该统计无法追溯到EHDS原始数据，则不被视为EHDS数据的'使用'。但自我输出验证是关键：如果保险公司自身向HDAB申请数据许可并输出了聚合统计，然后将这些统计用于精算——这被认为是'使用自己从EHDS获得的数据'，构成违反Art. 35(1)(d)。</li>
+<li>**合规建议**：保险公司应将EHDS数据使用与保险定价流程完全分离——最好由两个独立的部门（风险管理部和使用精算部）分别处理，中间架设信息隔离墙。</li>
+</ol>
+<p><strong>建议行动：</strong> 在组织内部设立信息隔离墙（Chinese Wall），确保从EHDS数据获得的任何统计信息不流入保险定价部门；精算模型若引用外部发病率数据，需核实该数据并非来源于EHDS。</p>
+<blockquote>*（注：本报告基于EHDS KG在报告生成时刻的最新状态自动生成。详细分析可查询KG中对应条款和Wiki文档。）*</blockquote>
+<hr>
+<p><strong>报告结束 — 2026-06-05 / Role: 医疗保险机构 (Health Insurer)</strong></p>
+
+
+<div class="footer-note">
+  Reg. (EU) 2025/327 · EHDS Knowledge Graph · Generated 2026-06-06 20:56 UTC
+  <br><a href="index.html">← 返回报告索引</a>
+</div>
+</body></html>

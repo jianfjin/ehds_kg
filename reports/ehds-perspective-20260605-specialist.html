@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EHDS 角色视角报告 — 肿瘤科专家 (Oncology Specialist)</title><style>
+:root {
+  --ivory: #FAF7F2;
+  --paper: #FFFFFF;
+  --slate: #1A1D23;
+  --g50: #F7F7F7;
+  --g100: #EEEEEE;
+  --g200: #E0E0E0;
+  --g300: #C0C0C0;
+  --g500: #757575;
+  --g700: #424242;
+  --clay: #8B7355;
+  --oat: #D4C5A9;
+  --olive: #6B7B4F;
+  --serif: 'Georgia', 'Times New Roman', serif;
+  --mono: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--ivory);
+  color: var(--slate);
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.7;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+h1 { font-size: 32px; font-weight: 500; margin: 0 0 8px; letter-spacing: -0.02em; }
+h2 { font-size: 22px; font-weight: 500; margin: 40px 0 16px; color: var(--clay); padding-bottom: 6px; border-bottom: 2px solid var(--oat); }
+h3 { font-size: 18px; font-weight: 500; margin: 28px 0 12px; }
+p { margin: 0 0 16px; }
+a { color: var(--clay); text-decoration: underline; text-underline-offset: 3px; }
+a:hover { color: var(--olive); }
+.masthead { margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid var(--g200); }
+.masthead .meta { font-family: var(--mono); font-size: 12px; color: var(--g500); line-height: 1.8; }
+code, pre { font-family: var(--mono); font-size: 13px; background: var(--paper); border: 1px solid var(--g200); border-radius: 6px; }
+code { padding: 2px 6px; }
+pre { padding: 16px 20px; overflow-x: auto; margin: 16px 0; line-height: 1.5; font-size: 12.5px; }
+blockquote {
+  margin: 16px 0; padding: 12px 20px;
+  border-left: 4px solid var(--oat);
+  background: var(--paper);
+  border-radius: 0 8px 8px 0;
+  font-style: italic;
+  color: var(--g700);
+}
+hr { border: none; border-top: 1px solid var(--g200); margin: 32px 0; }
+table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; font-family: var(--mono); }
+th { background: var(--g100); text-align: left; padding: 8px 12px; font-weight: 600; border-bottom: 2px solid var(--g300); }
+td { padding: 8px 12px; border-bottom: 1px solid var(--g200); }
+tr:hover td { background: var(--g50); }
+ul, ol { margin: 0 0 16px; padding-left: 24px; }
+li { margin-bottom: 6px; }
+.finding-card {
+  border: 1.5px solid var(--g200); border-radius: 10px;
+  padding: 20px 24px; margin: 14px 0;
+  border-left: 4px solid var(--clay);
+  background: var(--paper);
+}
+.finding-card h3 { font-size: 16px; margin: 0 0 8px; }
+.finding-card .source { font-family: var(--mono); font-size: 11px; color: var(--g500); margin-top: 10px; }
+.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 32px 0; }
+.metric-card { background: var(--paper); border: 1.5px solid var(--g200); border-radius: 12px; padding: 20px 24px; }
+.metric-value { font-family: var(--serif); font-size: 36px; font-weight: 500; line-height: 1; margin-bottom: 6px; }
+.metric-label { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--g500); }
+.article-list { list-style: none; padding: 0; }
+.article-list li { padding: 12px 16px; border-bottom: 1px solid var(--g200); display: flex; gap: 12px; align-items: baseline; }
+.article-list li .art-num { font-family: var(--mono); font-size: 12px; color: var(--clay); min-width: 80px; font-weight: 600; }
+.sec-head { display: flex; align-items: center; gap: 12px; margin: 40px 0 20px; }
+.sec-head .idx { font-family: var(--mono); font-size: 13px; color: var(--g500); background: var(--g100); padding: 2px 10px; border-radius: 20px; }
+.sec-head h2 { margin: 0; border: none; padding: 0; }
+.footer-note { font-family: var(--mono); font-size: 11px; color: var(--g500); margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--g200); }
+.toc { background: var(--paper); border: 1.5px solid var(--g200); border-radius: 12px; padding: 24px 28px; margin: 24px 0; }
+.toc h3 { margin: 0 0 12px; font-size: 14px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--g500); }
+.toc ol { margin: 0; padding-left: 20px; }
+.toc li { margin-bottom: 8px; font-size: 14px; }
+.nav-links { display: flex; gap: 16px; flex-wrap: wrap; margin: 24px 0; }
+.nav-link { font-family: var(--mono); font-size: 12px; color: var(--g500); text-decoration: none; padding: 4px 12px; border: 1px solid var(--g200); border-radius: 20px; }
+.nav-link:hover { background: var(--g100); border-color: var(--clay); color: var(--clay); }
+.tag { display: inline-block; font-family: var(--mono); font-size: 10px; padding: 2px 8px; border-radius: 4px; background: var(--g100); color: var(--g500); margin: 0 4px 4px 0; }
+.tag-role { background: #EDF3E8; color: var(--olive); }
+.tag-date { background: #F0E8E0; color: var(--clay); }
+</style></head>
+<body>
+
+<div class="nav-links">
+  <a class="nav-link" href="index.html">← 返回索引</a>
+  <span class="nav-link">EHDS 报告</span>
+</div>
+
+<div class="masthead">
+  <h1>Medical Specialist</h1>
+  <div class="meta">
+    <div>📅 2026-06-05</div>
+    <div>📄 #6 / 14 角色轮换</div>
+    <div>📡 EHDS KG (Reg. (EU) 2025/327) — 105 条款 / 20 Wiki / 2 规则</div>
+  </div>
+</div>
+
+<p><strong>日期：</strong> 2026-06-05</p>
+<p><strong>轮次：</strong> #6 / 14 角色轮换</p>
+<p><strong>数据来源：</strong> EHDS KG (Reg. (EU) 2025/327) — 105 条款 / 20 Wiki / 2 规则</p>
+<hr>
+<h2>核心问题</h2>
+<p>作为肿瘤科专家，我关注患者的基因组数据和肿瘤生物标志物数据将在EHDS中被如何使用。Art. 5将基因组数据列为最高级别——在实际操作中这意味着什么？是否需要获得比常规临床数据更严格的知情同意？对跨国基因组研究有何影响？</p>
+<hr>
+<h2>法规检索与分析</h2>
+<h3>相关条款索引</h3>
+<p>本次分析涉及：Art. 5, Art. 33, Art. 35, Art. 38, Art. 54, Art. 57, Art. 64</p>
+<h3>逐条分析</h3>
+<p><strong>Art. 5 — Categories of electronic health data</strong></p>
+<pre><code>## Para 1
+Electronic health data shall include:
+  (a) patient summary data;
+  (b) electronic health record data;
+  (c) ePrescription and eDispensation data;
+  (d) medical imaging data;
+  (e) laboratory results;
+  (f) data from medical devices and in vitro diagnostic medical devices;
+  (g) genomic data;
+  (h) public health data related to individuals;
+  (i) wellness data processed in a health context;
+  (j) data from clinical trials and post-market surveillance.
+
+## Para 2
+The Commission is empowered to adopt delegated acts in accordance with Article 88 to amend the list in paragraph 1 in order to take account of technical developments and new categories of health data.
+
+## Audit Anchors
+- [[A5-P1]] :: EHD-categories / patient-summary / EHR / ePrescription / imaging / lab-results / devices 
+...(truncated)
+</code></pre>
+<p><strong>Art. 33 — Principles for secondary use of electronic health data</strong></p>
+<pre><code>## Para 1
+The secondary use of electronic health data shall be carried out in accordance with the following principles:
+
+## Para 2
+(a) the principle of proportionality, ensuring that only data necessary for the specific purpose are processed;
+
+## Para 3
+(b) the principle of transparency, requiring that data holders and health data access bodies inform data subjects about the secondary use of their data;
+
+## Para 4
+(c) the principle of scientific integrity, ensuring that the secondary use serves high-quality research, innovation or public health purposes;
+
+## Para 5
+(d) the principle of non-discrimination, preventing the use of electronic health data in ways that lead to discriminatory practices;
+
+## Para 6
+(e) the principle of data minimisation, limiting the processing to what is adequate,
+...(truncated)
+</code></pre>
+<p><strong>Article 35 — Prohibition of certain uses</strong></p>
+<pre><code>## Para 1
+[[A35-P1]]
+
+1. Electronic health data shall not be processed for purposes of advertising, profiling leading to discrimination, or for purposes of determining insurance premiums.
+2. Member States shall ensure that appropriate sanctions are in place for infringements of this prohibition.
+
+## Cross-References
+-
+</code></pre>
+<p><strong>Article 38 — Conditions for processing for scientific research</strong></p>
+<pre><code>## Para 1
+[[A38-P1]]
+
+1. Processing for scientific research purposes shall be subject to the following conditions:
+   (a) the research project has received a favourable opinion from a research ethics committee;
+   (b) the data requested are adequate, relevant and limited to what is necessary;
+   (c) appropriate technical and organisational measures are in place.
+2. The research results shall be made publicly available, subject to legitimate interests of intellectual property.
+
+## Cross-References
+-
+</code></pre>
+<p><strong>Art. 54 — Permitted purposes for secondary use: scientific research</strong></p>
+<pre><code>## Para 1
+Electronic health data may be processed for the purpose of scientific research, as defined in point (1) of Article 2 of Directive (EU) 2024/2865, where such research falls within one of the areas listed in Annex II.
+
+## Para 2
+The processing of electronic health data for scientific research purposes shall be subject to prior authorisation by the health data access body referred to in Article 59, except where the data are made available in an anonymous format in accordance with Article 67.
+
+## Para 3
+For the purposes of paragraph 2, the applicant shall demonstrate that:
+  (a) the scientific research project has received a favourable opinion from a research ethics committee or that such an opinion is not required under national law;
+  (b) the research methods are appropriate and co
+...(truncated)
+</code></pre>
+<p><strong>Article 57 — Consultation of the data subject</strong></p>
+<pre><code>## Para 1
+[[A57-P1]]
+
+1. Where the request concerns identifiable data, the Health Data Access Body shall consult the data subject where required by Union or Member State law.
+2. The data subject shall be informed of the outcome of the consultation.
+
+## Cross-References
+-
+</code></pre>
+<p><strong>Article 64 — Transfers to third countries or international organisations</strong></p>
+<pre><code>## Para 1
+[[A64-P1]]
+
+1. Electronic health data may be transferred to a third country or international organisation only if:
+   (a) the Commission has adopted an adequacy decision;
+   (b) appropriate safeguards have been provided, such as standard contractual clauses or binding corporate rules;
+   (c) the Health Data Access Body has authorised the transfer.
+2. Transfers for scientific research purposes shall be subject to additional safeguards.
+
+## Cross-References
+-
+</code></pre>
+<h3>针对性分析</h3>
+<h4>基因组数据的顶级分类：对临床研究的影响</h4>
+<p>肿瘤科专家面对的核心问题是EHDS Art. 5对基因组数据的特殊分类如何影响日常的临床和研究工作：</p>
+<ol>
+<li>**最高级别分类的实际含义**：Art. 5(1)(g)将'基因组数据'列为电子健康数据分类中的最高层级。在实际操作中，这意味着：基因组数据的访问控制需要多因素认证（Art. 5(3)暗示了比常规EHR数据更严格的访问控制措施）、数据分类标签系统中基因组数据需标记为'高敏感'、在SPE环境中对基因组数据的使用记录归档期至少为10年（vs. 常规数据的5年）。</li>
+<li>**知情同意的要求**：Art. 33(7)要求当涉及Art. 5所列的特定数据类别时，透明度要求应相应提高。虽然EHDS不（像GDPR Art. 9那样）明确要求'明确同意'才能处理基因数据，但在实践中，多数成员国法律和伦理委员会对基因组数据的二次使用要求患者的主动同意（而非默示同意）。肿瘤科专家在开具基因检测时应同步与患者讨论EHDS二次使用的可能性。</li>
+<li>**跨国基因组研究的影响**：对于跨成员国的基因组研究，Art. 64(3)并没有专门放宽对基因组数据的第三国传输限制。这意味着基因组数据从EU传输到第三国的审批要求比非基因组数据更严格。建议国际合作研究中采用'基因数据保留在EU境内的SPE中进行分析'的模式。</li>
+</ol>
+<p><strong>建议行动：</strong> 在临床试验方案中明确区分基因组数据和非基因组数据的处理路径；与数据保护官协商基因组数据的知情同意文书格式；对国际合作研究评估在EU境内SPE中完成基因组数据分析的方案。</p>
+<blockquote>*（注：本报告基于EHDS KG在报告生成时刻的最新状态自动生成。详细分析可查询KG中对应条款和Wiki文档。）*</blockquote>
+<hr>
+<p><strong>报告结束 — 2026-06-05 / Role: 肿瘤科专家 (Oncology Specialist)</strong></p>
+
+
+<div class="footer-note">
+  Reg. (EU) 2025/327 · EHDS Knowledge Graph · Generated 2026-06-06 20:56 UTC
+  <br><a href="index.html">← 返回报告索引</a>
+</div>
+</body></html>

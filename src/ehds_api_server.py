@@ -110,6 +110,7 @@ class Handler(BaseHTTPRequestHandler):
                 "index": count("ehds_index"),
                 "wiki": count("ehds_wiki"),
                 "kb": count("ehds_kb"),
+                "data": count("data"),
             })
 
         if path == "/api/index":

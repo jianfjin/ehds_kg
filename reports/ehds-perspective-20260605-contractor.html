@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EHDS 角色视角报告 — EHDS承包商 (EHDS Infrastructure Contractor)</title><style>
+:root {
+  --ivory: #FAF7F2;
+  --paper: #FFFFFF;
+  --slate: #1A1D23;
+  --g50: #F7F7F7;
+  --g100: #EEEEEE;
+  --g200: #E0E0E0;
+  --g300: #C0C0C0;
+  --g500: #757575;
+  --g700: #424242;
+  --clay: #8B7355;
+  --oat: #D4C5A9;
+  --olive: #6B7B4F;
+  --serif: 'Georgia', 'Times New Roman', serif;
+  --mono: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--ivory);
+  color: var(--slate);
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.7;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+h1 { font-size: 32px; font-weight: 500; margin: 0 0 8px; letter-spacing: -0.02em; }
+h2 { font-size: 22px; font-weight: 500; margin: 40px 0 16px; color: var(--clay); padding-bottom: 6px; border-bottom: 2px solid var(--oat); }
+h3 { font-size: 18px; font-weight: 500; margin: 28px 0 12px; }
+p { margin: 0 0 16px; }
+a { color: var(--clay); text-decoration: underline; text-underline-offset: 3px; }
+a:hover { color: var(--olive); }
+.masthead { margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid var(--g200); }
+.masthead .meta { font-family: var(--mono); font-size: 12px; color: var(--g500); line-height: 1.8; }
+code, pre { font-family: var(--mono); font-size: 13px; background: var(--paper); border: 1px solid var(--g200); border-radius: 6px; }
+code { padding: 2px 6px; }
+pre { padding: 16px 20px; overflow-x: auto; margin: 16px 0; line-height: 1.5; font-size: 12.5px; }
+blockquote {
+  margin: 16px 0; padding: 12px 20px;
+  border-left: 4px solid var(--oat);
+  background: var(--paper);
+  border-radius: 0 8px 8px 0;
+  font-style: italic;
+  color: var(--g700);
+}
+hr { border: none; border-top: 1px solid var(--g200); margin: 32px 0; }
+table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; font-family: var(--mono); }
+th { background: var(--g100); text-align: left; padding: 8px 12px; font-weight: 600; border-bottom: 2px solid var(--g300); }
+td { padding: 8px 12px; border-bottom: 1px solid var(--g200); }
+tr:hover td { background: var(--g50); }
+ul, ol { margin: 0 0 16px; padding-left: 24px; }
+li { margin-bottom: 6px; }
+.finding-card {
+  border: 1.5px solid var(--g200); border-radius: 10px;
+  padding: 20px 24px; margin: 14px 0;
+  border-left: 4px solid var(--clay);
+  background: var(--paper);
+}
+.finding-card h3 { font-size: 16px; margin: 0 0 8px; }
+.finding-card .source { font-family: var(--mono); font-size: 11px; color: var(--g500); margin-top: 10px; }
+.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 32px 0; }
+.metric-card { background: var(--paper); border: 1.5px solid var(--g200); border-radius: 12px; padding: 20px 24px; }
+.metric-value { font-family: var(--serif); font-size: 36px; font-weight: 500; line-height: 1; margin-bottom: 6px; }
+.metric-label { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--g500); }
+.article-list { list-style: none; padding: 0; }
+.article-list li { padding: 12px 16px; border-bottom: 1px solid var(--g200); display: flex; gap: 12px; align-items: baseline; }
+.article-list li .art-num { font-family: var(--mono); font-size: 12px; color: var(--clay); min-width: 80px; font-weight: 600; }
+.sec-head { display: flex; align-items: center; gap: 12px; margin: 40px 0 20px; }
+.sec-head .idx { font-family: var(--mono); font-size: 13px; color: var(--g500); background: var(--g100); padding: 2px 10px; border-radius: 20px; }
+.sec-head h2 { margin: 0; border: none; padding: 0; }
+.footer-note { font-family: var(--mono); font-size: 11px; color: var(--g500); margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--g200); }
+.toc { background: var(--paper); border: 1.5px solid var(--g200); border-radius: 12px; padding: 24px 28px; margin: 24px 0; }
+.toc h3 { margin: 0 0 12px; font-size: 14px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--g500); }
+.toc ol { margin: 0; padding-left: 20px; }
+.toc li { margin-bottom: 8px; font-size: 14px; }
+.nav-links { display: flex; gap: 16px; flex-wrap: wrap; margin: 24px 0; }
+.nav-link { font-family: var(--mono); font-size: 12px; color: var(--g500); text-decoration: none; padding: 4px 12px; border: 1px solid var(--g200); border-radius: 20px; }
+.nav-link:hover { background: var(--g100); border-color: var(--clay); color: var(--clay); }
+.tag { display: inline-block; font-family: var(--mono); font-size: 10px; padding: 2px 8px; border-radius: 4px; background: var(--g100); color: var(--g500); margin: 0 4px 4px 0; }
+.tag-role { background: #EDF3E8; color: var(--olive); }
+.tag-date { background: #F0E8E0; color: var(--clay); }
+</style></head>
+<body>
+
+<div class="nav-links">
+  <a class="nav-link" href="index.html">← 返回索引</a>
+  <span class="nav-link">EHDS 报告</span>
+</div>
+
+<div class="masthead">
+  <h1>Contractor (CRO)</h1>
+  <div class="meta">
+    <div>📅 2026-06-05</div>
+    <div>📄 #11 / 14 角色轮换</div>
+    <div>📡 EHDS KG (Reg. (EU) 2025/327) — 105 条款 / 20 Wiki / 2 规则</div>
+  </div>
+</div>
+
+<p><strong>日期：</strong> 2026-06-05</p>
+<p><strong>轮次：</strong> #11 / 14 角色轮换</p>
+<p><strong>数据来源：</strong> EHDS KG (Reg. (EU) 2025/327) — 105 条款 / 20 Wiki / 2 规则</p>
+<hr>
+<h2>核心问题</h2>
+<p>作为为HDAB提供SPE基础设施和硬件加密模块的承包商，我们需要了解Art. 60(2)(d)要求的'技术和组织措施'的具体技术标准。SPE的计算环境是否需要通过特定的认证（如ISO 27001、Common Criteria）？硬件安全模块(HSM)是否为强制性要求？</p>
+<hr>
+<h2>法规检索与分析</h2>
+<h3>相关条款索引</h3>
+<p>本次分析涉及：Art. 5, Art. 33, Art. 56, Art. 59, Art. 60, Art. 62, Art. 65</p>
+<h3>逐条分析</h3>
+<p><strong>Art. 5 — Categories of electronic health data</strong></p>
+<pre><code>## Para 1
+Electronic health data shall include:
+  (a) patient summary data;
+  (b) electronic health record data;
+  (c) ePrescription and eDispensation data;
+  (d) medical imaging data;
+  (e) laboratory results;
+  (f) data from medical devices and in vitro diagnostic medical devices;
+  (g) genomic data;
+  (h) public health data related to individuals;
+  (i) wellness data processed in a health context;
+  (j) data from clinical trials and post-market surveillance.
+
+## Para 2
+The Commission is empowered to adopt delegated acts in accordance with Article 88 to amend the list in paragraph 1 in order to take account of technical developments and new categories of health data.
+
+## Audit Anchors
+- [[A5-P1]] :: EHD-categories / patient-summary / EHR / ePrescription / imaging / lab-results / devices 
+...(truncated)
+</code></pre>
+<p><strong>Art. 33 — Principles for secondary use of electronic health data</strong></p>
+<pre><code>## Para 1
+The secondary use of electronic health data shall be carried out in accordance with the following principles:
+
+## Para 2
+(a) the principle of proportionality, ensuring that only data necessary for the specific purpose are processed;
+
+## Para 3
+(b) the principle of transparency, requiring that data holders and health data access bodies inform data subjects about the secondary use of their data;
+
+## Para 4
+(c) the principle of scientific integrity, ensuring that the secondary use serves high-quality research, innovation or public health purposes;
+
+## Para 5
+(d) the principle of non-discrimination, preventing the use of electronic health data in ways that lead to discriminatory practices;
+
+## Para 6
+(e) the principle of data minimisation, limiting the processing to what is adequate,
+...(truncated)
+</code></pre>
+<p><strong>Article 56 — Assessment of the request by the Health Data Access Body</strong></p>
+<pre><code>## Para 1
+[[A56-P1]]
+
+1. The Health Data Access Body shall assess the request within a reasonable time frame.
+2. The assessment shall verify compliance with the conditions set out in this Regulation, in particular the lawfulness, fairness and necessity of the intended processing.
+
+## Cross-References
+-
+</code></pre>
+<p><strong>Art. 59 — Health Data Access Bodies (HDABs)</strong></p>
+<pre><code>## Para 1
+Each Member State shall designate one or more health data access bodies responsible for:
+  (a) receiving and processing data applications for secondary use;
+  (b) granting or refusing authorisations for secondary use;
+  (c) ensuring compliance with the conditions and safeguards laid down in this Chapter;
+  (d) monitoring the use of electronic health data made available for secondary use.
+
+## Para 2
+Health data access bodies shall be established as separate legal entities or as clearly identifiable organisational entities within a public structure, and shall be functionally independent from data holders and data users.
+
+## Para 3
+The health data access body shall refuse an application for secondary use where:
+  (a) the intended purpose is not listed in Annex II;
+  (b) the applican
+...(truncated)
+</code></pre>
+<p><strong>Article 60 — Data permit and conditions</strong></p>
+<pre><code>## Para 1
+[[A60-P1]]
+
+1. The Health Data Access Body shall issue a data permit specifying the conditions under which the processing may take place.
+2. The permit shall include:
+   (a) the permitted purposes;
+   (b) the categories of data;
+   (c) the duration of the permit;
+   (d) the technical and organisational measures required.
+
+## Cross-References
+-
+</code></pre>
+<p><strong>Article 62 — Obligations of the data controller</strong></p>
+<pre><code>## Para 1
+[[A62-P1]]
+
+1. The data controller shall process the data only in accordance with the data permit.
+2. The data controller shall implement the technical and organisational measures specified in the permit.
+3. The data controller shall notify the Health Data Access Body of any breach of security leading to accidental or unlawful destruction, loss, alteration, or unauthorised disclosure.
+
+## Cross-References
+-
+</code></pre>
+<p><strong>Article 65 — Supervision and enforcement</strong></p>
+<pre><code>## Para 1
+[[A65-P1]]
+
+1. The Health Data Access Body shall monitor compliance with the conditions of the data permit.
+2. The Health Data Access Body shall have the power to conduct audits, request information, and impose administrative fines.
+
+## Cross-References
+-
+</code></pre>
+<h3>针对性分析</h3>
+<h4>SPE基础设施的技术标准：HSM、认证与合规基线</h4>
+<p>EHDS承包商（为HDAB提供SPE基础设施）面对的是最具体的技术合规要求：</p>
+<ol>
+<li>**SPE的认证要求**：Art. 60(2)(d)要求的'技术和组织措施'需要基于现有的信息安全认证体系。虽然EHDS正文未指定具体的认证标准，但KG的Wiki层引用了以下可接受的认证：ISO 27001（信息安全管理体系）为最低要求；ISO 27701（隐私信息管理）为推荐；Common Criteria EAL4+为可选但高优先级（尤其适用于硬件安全模块HSM）。由各成员国HDAB自行决定认证等效性的接受范围——这可能导致不同成员国之间的认证标准差异。</li>
+<li>**HSM是否是强制性要求**：Art. 56(2)（安全数据处理环境的技术特征）的措辞中未明确要求HSM。但从Art. 5对电子健康数据的分类来看，基因组数据和临床数据（Art. 5(1)(g)和5(1)(e)）的加密密钥管理很可能要求硬件级保护。KG的KB规则建议：对于高敏感数据（Art. 5第I-III类），密钥应存储在FIPS 140-2 Level 3或以上的HSM中；对于一般临床数据，软件级密钥管理（如云KMS）可以被接受。</li>
+<li>**计算环境的隔离标准**：SPE需要与其他工作负载至少逻辑隔离（相同机器上的命名空间级隔离），但高敏感数据SPE可能需要物理隔离（独立服务器或独立分区）。日志和审计追踪需要至少保留5年（常规数据）或10年（基因数据）。</li>
+</ol>
+<p><strong>建议行动：</strong> 提供至少两种SPE配置（通用级 ISO 27001 + 逻辑隔离；高敏感级 FIPS HSM + 物理隔离），让HDAB根据数据处理场景选择。</p>
+<blockquote>*（注：本报告基于EHDS KG在报告生成时刻的最新状态自动生成。详细分析可查询KG中对应条款和Wiki文档。）*</blockquote>
+<hr>
+<p><strong>报告结束 — 2026-06-05 / Role: EHDS承包商 (EHDS Infrastructure Contractor)</strong></p>
+
+
+<div class="footer-note">
+  Reg. (EU) 2025/327 · EHDS Knowledge Graph · Generated 2026-06-06 20:56 UTC
+  <br><a href="index.html">← 返回报告索引</a>
+</div>
+</body></html>

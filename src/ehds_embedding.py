@@ -14,11 +14,18 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import pickle
 import re
 import sqlite3
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+# Ensure src/ is on sys.path for sibling imports
+import sys
+_src = Path(__file__).resolve().parent
+if str(_src) not in sys.path:
+    sys.path.insert(0, str(_src))
 
 from ehds_common import (
     PROJECT_ROOT, INDEX_ROOT, WIKI_ROOT, KB_ROOT, DATA_ROOT,
@@ -190,7 +197,11 @@ class EHDSEmbeddingEngine:
             for para in body.split("\n\n"):
                 para = para.strip()
                 if para and not para.startswith("[["):
-                    priority = float(meta.get("priority", 0)) if meta.get("priority") else 0.0
+                    priority_raw = meta.get("priority", 0)
+                    try:
+                        priority = float(priority_raw) if priority_raw else 0.0
+                    except (TypeError, ValueError):
+                        priority = 0.0
                     metadata: Dict[str, Any] = {
                         "article": meta.get("article"),
                     }
