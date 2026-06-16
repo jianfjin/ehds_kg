@@ -197,7 +197,7 @@ class EHDSEmbeddingEngine:
                 })
         elif layer == "data":
             # Merge every 5 paragraphs into one chunk to reduce fragmentation.
-            paragraphs = [p.strip() for p in body.split("\n\n") if p.strip() and not p.startswith("[")]
+            paragraphs = [p.strip() for p in body.split("\n\n") if p.strip() and not p.startswith("[[")]
             for i in range(0, len(paragraphs), 5):
                 chunk_text = "\n\n".join(paragraphs[i:i + 5])
                 if chunk_text:
@@ -208,7 +208,7 @@ class EHDSEmbeddingEngine:
                             "source": meta.get("source", ""),
                             "document": meta.get("document", path.name),
                         },
-                        "priority": 0.15,
+                        "priority": 0.0,
                     })
             return chunks
         else:

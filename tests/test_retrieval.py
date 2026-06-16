@@ -16,3 +16,13 @@ def test_art68_identifier_search():
     assert len(results) > 0
     sources = " ".join(r["source_path"] for r in results)
     assert "art" in sources.lower() or "68" in sources or "data permit" in " ".join(r["text"] for r in results).lower()
+
+
+def test_data_chunk_merge():
+    """Data layer chunks should contain multiple paragraphs."""
+    engine = get_engine()
+    results = engine.semantic_search("ethical governance recommendations", top_k=5)
+    data_results = [r for r in results if r["layer"] == "data"]
+    assert len(data_results) > 0
+    # With 5-paragraph merge, each data chunk should be > 500 chars
+    assert any(len(r["text"]) > 500 for r in data_results), "merged chunk too short"
