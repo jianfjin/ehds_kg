@@ -29,7 +29,7 @@ from ehds_common import (
     _read_pdf_file, audit_document,
 )
 
-# Lazy-import embedding engine (avoids loading TF-IDF cache at import time)
+# Lazy-import embedding engine (avoids loading BM25 cache at import time)
 _embedding_engine = None
 
 # /api/retrieve query result cache: TTL 120s, max 500 entries
@@ -210,7 +210,7 @@ class Handler(BaseHTTPRequestHandler):
                             "source_path": entry.get("filename", ""),
                         })
 
-            # --- depth>=1: TF-IDF semantic search ---
+            # --- depth>=1: BM25 semantic search ---
             if depth >= 1:
                 try:
                     engine = _get_embedding_engine()
@@ -239,7 +239,7 @@ class Handler(BaseHTTPRequestHandler):
                             "article": meta.get("article", ""),
                         })
                 except Exception as e:
-                    print(f"[KG] TF-IDF search unavailable: {e}")
+                    print(f"[KG] BM25 search unavailable: {e}")
 
             # --- depth>=2: audit rules check ---
             if depth >= 2:

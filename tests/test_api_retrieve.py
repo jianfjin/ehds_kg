@@ -121,8 +121,8 @@ class TestRetrieveAPI(unittest.TestCase):
     def test_retrieve_depth1_returns_results(self):
         """/api/retrieve ?q=electronic+health+data+space &depth=1 returns results
 
-        NOTE: depth=1 activates TF-IDF semantic search on top of keyword
-        index lookup.  If the TF-IDF cache is missing (e.g. first run),
+        NOTE: depth=1 activates BM25 semantic search on top of keyword
+        index lookup.  If the BM25 cache is missing (e.g. first run),
         the semantic branch degrades gracefully — the test still gets
         results from the depth=0 keyword fallback.
         """

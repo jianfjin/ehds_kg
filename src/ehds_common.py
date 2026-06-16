@@ -195,7 +195,7 @@ def _resolve_citation(
 # KB Path Resolution & Walking
 # ---------------------------------------------------------------------------
 
-KB_ROOTS = [INDEX_ROOT, WIKI_ROOT, KB_ROOT]
+KB_ROOTS = [INDEX_ROOT, WIKI_ROOT, KB_ROOT, DATA_ROOT]
 
 
 def _resolve_kb_path(user_path: str) -> Optional[Path]:
