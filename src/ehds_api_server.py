@@ -216,29 +216,21 @@ class Handler(BaseHTTPRequestHandler):
                 try:
                     engine = _get_embedding_engine()
                     semantic = engine.semantic_search(query, top_k=max_results)
-                    kg_path = PROJECT_ROOT
                     for sr in semantic:
                         sp = sr.get("source_path", "")
                         if sp in seen_paths:
                             continue
                         seen_paths.add(sp)
-                        # Read full file body for rich context
-                        try:
-                            full_path = kg_path / sp
-                            full_text = full_path.read_text(encoding="utf-8", errors="replace")
-                            _, body = _parse_frontmatter(full_text)
-                        except Exception:
-                            body = sr.get("text", "")
                         meta = sr.get("metadata", {})
                         document_id = meta.get("document_id") or f"EHDS-{sr.get('layer', 'kg').title()}"
-                        section_label = meta.get("section") or meta.get("title") or sp
+                        section_label = meta.get("section") or meta.get("title") or ""
                         results.append({
                             "layer": sr.get("layer", ""),
                             "document": document_id,
                             "section": section_label,
                             "section_id": meta.get("section_id", ""),
                             "similarity": sr.get("similarity"),
-                            "text": body.strip()[:2000],
+                            "text": sr.get("text", "")[:2000],
                             "source_path": sp,
                             "article": meta.get("article", ""),
                         })
