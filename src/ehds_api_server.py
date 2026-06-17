@@ -25,7 +25,7 @@ from pathlib import Path
 from ehds_common import (
     PROJECT_ROOT, INDEX_ROOT, WIKI_ROOT, KB_ROOT, DOCS_ROOT,
     _parse_frontmatter, _load_index_entries, _resolve_citation,
-    _resolve_kb_path, _walk_kb, _search_in_file, _read_text_file,
+    _resolve_kb_path, _walk_kb, _search_in_file,
     _read_pdf_file, audit_document,
 )
 
