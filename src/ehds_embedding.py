@@ -39,6 +39,10 @@ BM25_PATH = CACHE_ROOT / "ehds_bm25.pkl"
 # Layer-level boost applied to BM25 scores in semantic_search.
 LAYER_BOOST = {"data": 0.15, "wiki": 0.0, "index": 0.0}
 
+# Diversity rerank gap: candidates below this fraction of top BM25 score
+# are excluded from diversity selection. Set to 0.0 to disable.
+DIVERSITY_GAP_THRESHOLD = 0.5
+
 # PDF conversion tools (e.g. markitdown) sometimes inject page markers.
 _PAGE_MARKER_RE = re.compile(r"^---\s*Page\s+\d+\s*---\s*$", re.MULTILINE)
 
@@ -352,45 +356,28 @@ class EHDSEmbeddingEngine:
         # Use a generous candidate pool so diversity rerank has options.
         candidate_pool = candidates[:max(top_k * 3, 20)]
 
-        # Diversity rerank: top-2 per document_id, then fill remaining by score.
-        by_doc = defaultdict(list)
-        for r in candidate_pool:
-            doc_id = self._extract_doc_id_from_result(r)
-            by_doc[doc_id].append(r)
+        # Filter candidate pool by score gap relative to best.
+        if not candidate_pool:
+            results = []
+        else:
+            best_score = candidate_pool[0]["similarity"]
+            gap_floor = best_score * (1.0 - DIVERSITY_GAP_THRESHOLD)
+            eligible = [r for r in candidate_pool if r["similarity"] >= gap_floor]
 
-        diverse = []
-        for items in by_doc.values():
-            diverse.extend(items[:2])
+            # Diversity rerank: top-2 per document_id from eligible pool.
+            by_doc = defaultdict(list)
+            for r in eligible:
+                doc_id = Path(r["source_path"]).stem[:4].upper()
+                if not doc_id:
+                    doc_id = r.get("metadata", {}).get("document_id", "")
+                by_doc[doc_id].append(r)
 
-        # Re-sort diverse set by similarity to preserve approximate ranking.
-        diverse.sort(key=lambda x: x["similarity"], reverse=True)
+            diverse = []
+            for items in by_doc.values():
+                diverse.extend(items[:2])
 
-        # Fill remaining slots if needed.
-        if len(diverse) < top_k:
-            used = {id(r) for r in diverse}
-            remaining = [r for r in candidate_pool if id(r) not in used]
-            # Score-gap tie-breaker: avoid fillers far below the best score.
-            if diverse:
-                best_score = diverse[0]["similarity"]
-                gap_threshold = best_score * 0.5
-                for r in remaining:
-                    if len(diverse) >= top_k:
-                        break
-                    if r["similarity"] >= gap_threshold:
-                        diverse.append(r)
-                        used.add(id(r))
-            # If still short, take the rest regardless of gap.
-            if len(diverse) < top_k:
-                needed = top_k - len(diverse)
-                for r in remaining:
-                    if needed <= 0:
-                        break
-                    if id(r) not in used:
-                        diverse.append(r)
-                        used.add(id(r))
-                        needed -= 1
-
-        results = diverse[:top_k]
+            diverse.sort(key=lambda x: x["similarity"], reverse=True)
+            results = diverse[:top_k]
 
         # Final ordering: group by document_id, then section_id.
         results.sort(key=lambda x: (
