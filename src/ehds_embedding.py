@@ -344,7 +344,7 @@ class EHDSEmbeddingEngine:
                 "similarity": round(boosted, 4),
                 "source_path": chunk["source_path"],
                 "layer": chunk["layer"],
-                "text": chunk["text"][:2000] + "..." if len(chunk["text"]) > 2000 else chunk["text"],
+                "text": chunk["text"],
                 "metadata": chunk.get("metadata", {}),
             })
         candidates.sort(key=lambda x: x["similarity"], reverse=True)

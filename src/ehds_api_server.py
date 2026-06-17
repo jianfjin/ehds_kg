@@ -50,10 +50,9 @@ def _get_embedding_engine():
         return _embedding_engine
 
 
-def _smart_truncate(text: str, max_len: int = 2000) -> str:
-    """Truncate text to max_len, but skip if engine already truncated (ends with '...')."""
-    if text.endswith("..."):
-        return text
+def _smart_truncate(text: str, layer: str = "") -> str:
+    """Truncate text by layer. Data chunks get 8000 chars limit, others 2000."""
+    max_len = 8000 if layer == "data" else 2000
     if len(text) > max_len:
         return text[:max_len] + "..."
     return text
@@ -239,7 +238,7 @@ class Handler(BaseHTTPRequestHandler):
                             "section": section_label,
                             "section_id": meta.get("section_id", ""),
                             "similarity": sr.get("similarity"),
-                            "text": _smart_truncate(sr.get("text", "")),
+                            "text": _smart_truncate(sr.get("text", ""), layer=sr.get("layer", "")),
                             "source_path": sp,
                             "article": meta.get("article", ""),
                         })
