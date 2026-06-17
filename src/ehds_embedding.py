@@ -41,6 +41,15 @@ LAYER_BOOST = {"data": 0.15, "wiki": 0.0, "index": 0.0}
 # PDF conversion tools (e.g. markitdown) sometimes inject page markers.
 _PAGE_MARKER_RE = re.compile(r"^---\s*Page\s+\d+\s*---\s*$", re.MULTILINE)
 
+# Metadata heading patterns — paragraph-level markers that identify
+# document-frontmatter sections that should be excluded from data-layer chunks
+# so that BM25 ranking prioritises substantive content.
+_METADATA_HEADINGS = frozenset({
+    "document info", "disclaimer", "authors", "document history",
+    "keywords", "version", "0 document info",
+    "0.1 authors", "0.2 keywords", "0.3 document history",
+})
+
 
 # ---------------------------------------------------------------------------
 # Embedding Engine
@@ -200,8 +209,13 @@ class EHDSEmbeddingEngine:
             paragraphs = [p.strip() for p in body.split("\n\n") if p.strip() and not p.startswith("[[")]
             for i in range(0, len(paragraphs), 5):
                 chunk_text = "\n\n".join(paragraphs[i:i + 5])
-                if chunk_text:
-                    chunks.append({
+                if not chunk_text:
+                    continue
+                # Skip chunks that are purely document frontmatter (metadata).
+                first_line = paragraphs[i].split("\n")[0].strip().lower()
+                if any(mkw in first_line for mkw in _METADATA_HEADINGS):
+                    continue
+                chunks.append({
                         "text": f"{meta.get('title', path.stem)}\n{chunk_text}",
                         "metadata": {
                             "article": meta.get("article"),

@@ -26,3 +26,16 @@ def test_data_chunk_merge():
     assert len(data_results) > 0
     # With 5-paragraph merge, each data chunk should be > 500 chars
     assert any(len(r["text"]) > 500 for r in data_results), "merged chunk too short"
+
+
+def test_d82_metadata_filtered():
+    """D8.2 chunks should contain substantive content, not frontmatter metadata."""
+    engine = get_engine()
+    results = engine.semantic_search("ethical governance recommendations", top_k=10)
+    d82_texts = [r["text"] for r in results if "d8.2" in r["source_path"].lower()]
+    assert len(d82_texts) > 0, "D8.2 must be in top-10 results"
+    # Verify D8.2 chunk is substantive (not frontmatter like "Document info", "Disclaimer")
+    for t in d82_texts:
+        assert "disclaimer" not in t.lower(), "D8.2 chunk should not contain disclaimer metadata"
+        assert "document info" not in t.lower()[:200], \
+            "D8.2 chunk should not start with frontmatter"
