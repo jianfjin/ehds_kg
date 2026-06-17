@@ -44,7 +44,8 @@ _PAGE_MARKER_RE = re.compile(r"^---\s*Page\s+\d+\s*---\s*$", re.MULTILINE)
 
 # Heading-aware chunking constants.
 _CHUNK_MIN_CHARS = 256
-_CHUNK_MAX_CHARS = 2000
+_CHUNK_MAX_CHARS = 2000  # wiki, index
+_CHUNK_MAX_CHARS_DATA = 8000  # data layer — larger chunks for richer context
 
 # Split-on-newline-before-numbered-heading pattern.
 # Lookahead preserves the heading text (unlike re.split on the heading itself
@@ -261,9 +262,14 @@ class EHDSEmbeddingEngine:
                     continue
 
                 section_id = self._extract_section_id(heading)
-                chunk_text = f"{meta.get('title', path.stem)}\n{heading}\n{content}"
-                if len(chunk_text) > _CHUNK_MAX_CHARS:
-                    chunk_text = chunk_text[:_CHUNK_MAX_CHARS] + "..."
+                # Citation header for LLM grounding: [D8.2 · 3.2]
+                citation = f"[{document_id}"
+                if section_id:
+                    citation += f" · {section_id}"
+                citation += "]"
+                chunk_text = f"{citation}\n{meta.get('title', path.stem)}\n{heading}\n{content}"
+                if len(chunk_text) > _CHUNK_MAX_CHARS_DATA:
+                    chunk_text = chunk_text[:_CHUNK_MAX_CHARS_DATA - 3] + "..."
 
                 chunks.append({
                     "text": chunk_text,

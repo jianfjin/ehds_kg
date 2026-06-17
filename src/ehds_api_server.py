@@ -49,6 +49,15 @@ def _get_embedding_engine():
             _embedding_engine = get_engine()
         return _embedding_engine
 
+
+def _smart_truncate(text: str, max_len: int = 2000) -> str:
+    """Truncate text to max_len, but skip if engine already truncated (ends with '...')."""
+    if text.endswith("..."):
+        return text
+    if len(text) > max_len:
+        return text[:max_len] + "..."
+    return text
+
 PORT = 8080
 
 # Minimal HTML dashboard
@@ -230,7 +239,7 @@ class Handler(BaseHTTPRequestHandler):
                             "section": section_label,
                             "section_id": meta.get("section_id", ""),
                             "similarity": sr.get("similarity"),
-                            "text": sr.get("text", "")[:2000],
+                            "text": _smart_truncate(sr.get("text", "")),
                             "source_path": sp,
                             "article": meta.get("article", ""),
                         })
