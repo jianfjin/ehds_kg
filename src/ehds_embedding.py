@@ -46,8 +46,10 @@ _PAGE_MARKER_RE = re.compile(r"^---\s*Page\s+\d+\s*---\s*$", re.MULTILINE)
 _CHUNK_MIN_CHARS = 256
 _CHUNK_MAX_CHARS = 2000
 
-# Numbered section heading pattern: "3.2 Governance Model".
-_NUMBERED_HEADING_RE = re.compile(r"^\d+(?:\.\d+)*\s+[A-Z]", re.MULTILINE)
+# Split-on-newline-before-numbered-heading pattern.
+# Lookahead preserves the heading text (unlike re.split on the heading itself
+# which would consume the matched prefix).
+_NUMBERED_HEADING_SPLIT_RE = re.compile(r"\n(?=^\d+(?:\.\d+)*\s+[A-Za-z])", re.MULTILINE)
 
 # Markdown H2 heading pattern.
 _MD_H2_RE = re.compile(r"\n## ")
@@ -242,7 +244,7 @@ class EHDSEmbeddingEngine:
             if _MD_H2_RE.search(body):
                 parts = _MD_H2_RE.split(body)
             else:
-                parts = _NUMBERED_HEADING_RE.split(body)
+                parts = _NUMBERED_HEADING_SPLIT_RE.split(body)
 
             chunks: List[Dict[str, Any]] = []
             for raw in parts:
@@ -336,7 +338,7 @@ class EHDSEmbeddingEngine:
                 "similarity": round(boosted, 4),
                 "source_path": chunk["source_path"],
                 "layer": chunk["layer"],
-                "text": chunk["text"][:1000] + "..." if len(chunk["text"]) > 1000 else chunk["text"],
+                "text": chunk["text"][:2000] + "..." if len(chunk["text"]) > 2000 else chunk["text"],
                 "metadata": chunk.get("metadata", {}),
             })
         candidates.sort(key=lambda x: x["similarity"], reverse=True)
@@ -370,14 +372,16 @@ class EHDSEmbeddingEngine:
                         break
                     if r["similarity"] >= gap_threshold:
                         diverse.append(r)
+                        used.add(id(r))
             # If still short, take the rest regardless of gap.
             if len(diverse) < top_k:
                 needed = top_k - len(diverse)
                 for r in remaining:
                     if needed <= 0:
                         break
-                    if id(r) not in used and r not in diverse:
+                    if id(r) not in used:
                         diverse.append(r)
+                        used.add(id(r))
                         needed -= 1
 
         results = diverse[:top_k]
