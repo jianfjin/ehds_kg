@@ -18,8 +18,9 @@ import os
 import pickle
 import re
 import sqlite3
+from collections import defaultdict
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 # Ensure src/ is on sys.path for sibling imports
 import sys
@@ -41,14 +42,15 @@ LAYER_BOOST = {"data": 0.15, "wiki": 0.0, "index": 0.0}
 # PDF conversion tools (e.g. markitdown) sometimes inject page markers.
 _PAGE_MARKER_RE = re.compile(r"^---\s*Page\s+\d+\s*---\s*$", re.MULTILINE)
 
-# Metadata heading patterns — paragraph-level markers that identify
-# document-frontmatter sections that should be excluded from data-layer chunks
-# so that BM25 ranking prioritises substantive content.
-_METADATA_HEADINGS = frozenset({
-    "document info", "disclaimer", "authors", "document history",
-    "keywords", "version", "0 document info",
-    "0.1 authors", "0.2 keywords", "0.3 document history",
-})
+# Heading-aware chunking constants.
+_CHUNK_MIN_CHARS = 256
+_CHUNK_MAX_CHARS = 2000
+
+# Numbered section heading pattern: "3.2 Governance Model".
+_NUMBERED_HEADING_RE = re.compile(r"^\d+(?:\.\d+)*\s+[A-Z]", re.MULTILINE)
+
+# Markdown H2 heading pattern.
+_MD_H2_RE = re.compile(r"\n## ")
 
 
 # ---------------------------------------------------------------------------
@@ -174,6 +176,35 @@ class EHDSEmbeddingEngine:
         ]
         return unigrams + bigrams
 
+    @staticmethod
+    def _derive_document_id(path: Path, meta: Dict[str, Any]) -> str:
+        """Derive a short document identifier like ``D8.2`` from filename/title."""
+        # Filename stem first: d8.2-... or D8.2-...
+        m = re.search(r"(?i)\b(d\d+\.\d+)\b", path.stem)
+        if m:
+            return m.group(1).upper()
+        # Fall back to frontmatter title.
+        title = meta.get("title", "")
+        m = re.search(r"(?i)\b(d\d+\.\d+)\b", title)
+        if m:
+            return m.group(1).upper()
+        # Final fallback.
+        return path.stem[:4].upper()
+
+    @staticmethod
+    def _extract_section_id(heading: str) -> str:
+        """Extract ``3.2`` from a heading like ``3.2 Governance Model``."""
+        m = re.match(r"^(\d+(?:\.\d+)*)\b", heading.strip())
+        return m.group(1) if m else ""
+
+    @staticmethod
+    def _section_sort_key(section_id: str) -> Tuple[int, ...]:
+        """Convert ``3.2`` to (3, 2) so ``3.10`` sorts after ``3.2``."""
+        try:
+            return tuple(int(p) for p in section_id.split(".") if p)
+        except (ValueError, AttributeError):
+            return (999,)
+
     def _extract_chunks(self, path: Path, layer: str) -> List[Dict[str, Any]]:
         text = path.read_text(encoding="utf-8", errors="replace")
         meta, body = _parse_frontmatter(text)
@@ -205,26 +236,61 @@ class EHDSEmbeddingEngine:
                     "priority": 0.0,
                 })
         elif layer == "data":
-            # Merge every 5 paragraphs into one chunk to reduce fragmentation.
-            paragraphs = [p.strip() for p in body.split("\n\n") if p.strip() and not p.startswith("[[")]
-            for i in range(0, len(paragraphs), 5):
-                chunk_text = "\n\n".join(paragraphs[i:i + 5])
-                if not chunk_text:
+            document_id = self._derive_document_id(path, meta)
+
+            # Prefer Markdown H2 headings; fall back to numbered section headings.
+            if _MD_H2_RE.search(body):
+                parts = _MD_H2_RE.split(body)
+            else:
+                parts = _NUMBERED_HEADING_RE.split(body)
+
+            chunks: List[Dict[str, Any]] = []
+            for raw in parts:
+                raw = raw.strip()
+                if not raw:
                     continue
-                # Skip chunks that are purely document frontmatter (metadata).
-                first_line = paragraphs[i].split("\n")[0].strip().lower()
-                if any(mkw in first_line for mkw in _METADATA_HEADINGS):
+                lines = raw.split("\n", 1)
+                heading = lines[0].strip()
+                content = lines[1].strip() if len(lines) > 1 else ""
+
+                # Merge tiny heading-only fragments into the previous chunk.
+                if len(raw) < _CHUNK_MIN_CHARS and chunks:
+                    chunks[-1]["text"] += "\n\n" + raw
                     continue
+
+                section_id = self._extract_section_id(heading)
+                chunk_text = f"{meta.get('title', path.stem)}\n{heading}\n{content}"
+                if len(chunk_text) > _CHUNK_MAX_CHARS:
+                    chunk_text = chunk_text[:_CHUNK_MAX_CHARS] + "..."
+
                 chunks.append({
-                        "text": f"{meta.get('title', path.stem)}\n{chunk_text}",
-                        "metadata": {
-                            "article": meta.get("article"),
-                            "source": meta.get("source", ""),
-                            "document": meta.get("document", path.name),
-                        },
-                        "priority": 0.0,
-                    })
-            return chunks
+                    "text": chunk_text,
+                    "metadata": {
+                        "document_id": document_id,
+                        "section_id": section_id,
+                        "section": heading,
+                        "source": meta.get("source", ""),
+                        "document": meta.get("document", path.name),
+                    },
+                    "priority": 0.0,
+                })
+
+            # Second pass: merge any trailing tiny chunks backwards.
+            merged: List[Dict[str, Any]] = []
+            for c in chunks:
+                if len(c["text"]) < _CHUNK_MIN_CHARS and merged:
+                    merged[-1]["text"] += "\n\n" + c["text"]
+                    # Keep the lowest section_id of the merged pair.
+                    if c["metadata"]["section_id"]:
+                        current = merged[-1]["metadata"]["section_id"]
+                        if (not current or
+                                self._section_sort_key(c["metadata"]["section_id"]) <
+                                self._section_sort_key(current)):
+                            merged[-1]["metadata"]["section_id"] = c["metadata"]["section_id"]
+                            merged[-1]["metadata"]["section"] = c["metadata"]["section"]
+                else:
+                    merged.append(c)
+            return merged
         else:
             # Paragraph chunking for wiki.
             for para in body.split("\n\n"):
@@ -248,14 +314,14 @@ class EHDSEmbeddingEngine:
         return chunks
 
     def semantic_search(
-        self, query: str, top_k: int = 5, layer_filter: Optional[str] = None
+        self, query: str, top_k: int = 10, layer_filter: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         if self.bm25 is None:
             return []
         tokenized_query = self._tokenize(query)
         scores = self.bm25.get_scores(tokenized_query)
         chunks = self._load_chunks()
-        results = []
+        candidates = []
         for i, chunk in enumerate(chunks):
             if layer_filter and chunk["layer"] != layer_filter:
                 continue
@@ -266,15 +332,74 @@ class EHDSEmbeddingEngine:
             priority = chunk.get("priority", 0.0)
             layer = chunk.get("layer", "")
             boosted = score * (1.0 + float(priority) + LAYER_BOOST.get(layer, 0.0))
-            results.append({
+            candidates.append({
                 "similarity": round(boosted, 4),
                 "source_path": chunk["source_path"],
                 "layer": chunk["layer"],
                 "text": chunk["text"][:1000] + "..." if len(chunk["text"]) > 1000 else chunk["text"],
                 "metadata": chunk.get("metadata", {}),
             })
-        results.sort(key=lambda x: x["similarity"], reverse=True)
-        return results[:top_k]
+        candidates.sort(key=lambda x: x["similarity"], reverse=True)
+
+        # Use a generous candidate pool so diversity rerank has options.
+        candidate_pool = candidates[:max(top_k * 3, 20)]
+
+        # Diversity rerank: top-2 per document_id, then fill remaining by score.
+        by_doc = defaultdict(list)
+        for r in candidate_pool:
+            doc_id = self._extract_doc_id_from_result(r)
+            by_doc[doc_id].append(r)
+
+        diverse = []
+        for items in by_doc.values():
+            diverse.extend(items[:2])
+
+        # Re-sort diverse set by similarity to preserve approximate ranking.
+        diverse.sort(key=lambda x: x["similarity"], reverse=True)
+
+        # Fill remaining slots if needed.
+        if len(diverse) < top_k:
+            used = {id(r) for r in diverse}
+            remaining = [r for r in candidate_pool if id(r) not in used]
+            # Score-gap tie-breaker: avoid fillers far below the best score.
+            if diverse:
+                best_score = diverse[0]["similarity"]
+                gap_threshold = best_score * 0.5
+                for r in remaining:
+                    if len(diverse) >= top_k:
+                        break
+                    if r["similarity"] >= gap_threshold:
+                        diverse.append(r)
+            # If still short, take the rest regardless of gap.
+            if len(diverse) < top_k:
+                needed = top_k - len(diverse)
+                for r in remaining:
+                    if needed <= 0:
+                        break
+                    if id(r) not in used and r not in diverse:
+                        diverse.append(r)
+                        needed -= 1
+
+        results = diverse[:top_k]
+
+        # Final ordering: group by document_id, then section_id.
+        results.sort(key=lambda x: (
+            self._extract_doc_id_from_result(x),
+            self._section_sort_key(x.get("metadata", {}).get("section_id", "")),
+        ))
+        return results
+
+    @staticmethod
+    def _extract_doc_id_from_result(result: Dict[str, Any]) -> str:
+        """Pull document_id from metadata or fall back to filename stem."""
+        meta = result.get("metadata", {})
+        doc_id = meta.get("document_id")
+        if doc_id:
+            return str(doc_id)
+        m = re.search(r"(?i)\b(d\d+\.\d+)\b", Path(result["source_path"]).stem)
+        if m:
+            return m.group(1).upper()
+        return Path(result["source_path"]).stem[:4].upper()
 
 
 # Global singleton
@@ -296,7 +421,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--build", action="store_true")
     parser.add_argument("--search", type=str)
-    parser.add_argument("--top-k", type=int, default=5)
+    parser.add_argument("--top-k", type=int, default=10)
     args = parser.parse_args()
 
     engine = EHDSEmbeddingEngine()

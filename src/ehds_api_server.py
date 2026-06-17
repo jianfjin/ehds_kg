@@ -179,9 +179,9 @@ class Handler(BaseHTTPRequestHandler):
             except ValueError:
                 depth = 1
             try:
-                max_results = min(int(q.get("max_results", ["5"])[0]), 20)
+                max_results = min(int(q.get("max_results", ["10"])[0]), 20)
             except ValueError:
-                max_results = 5
+                max_results = 10
 
             # Query result cache lookup (TTL 120s, max 500)
             cache_key = f"{query}|{depth}|{max_results}"
@@ -230,10 +230,13 @@ class Handler(BaseHTTPRequestHandler):
                         except Exception:
                             body = sr.get("text", "")
                         meta = sr.get("metadata", {})
+                        document_id = meta.get("document_id") or f"EHDS-{sr.get('layer', 'kg').title()}"
+                        section_label = meta.get("section") or meta.get("title") or sp
                         results.append({
                             "layer": sr.get("layer", ""),
-                            "document": f"EHDS-{sr.get('layer', 'kg').title()}",
-                            "section": meta.get("title", sp),
+                            "document": document_id,
+                            "section": section_label,
+                            "section_id": meta.get("section_id", ""),
                             "similarity": sr.get("similarity"),
                             "text": body.strip()[:2000],
                             "source_path": sp,
